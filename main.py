@@ -9,9 +9,9 @@ logger = logging.getLogger()
 
 ENGINE_ID = "Coding BP for OSS Validator"
 
-PATH_TO_CHECK = os.getenv("INPUT_PATH_TO_CHECK", ".")
-OUTPUT_FILE = os.getenv("INPUT_OUTPUT_FILE", "coding-best-practices-report.json")
-OUTPUT_FORMAT = os.getenv("INPUT_OUTPUT_FORMAT", "generic")
+PATH_TO_CHECK = os.getenv("INPUT_PATH-TO-CHECK", ".")
+OUTPUT_FILE = os.getenv("INPUT_OUTPUT-FILE", "coding-best-practices-report.json")
+OUTPUT_FORMAT = os.getenv("INPUT_OUTPUT-FORMAT", "generic")
 WORKSPACE = os.getenv("GITHUB_WORKSPACE", "/github/workspace")
 
 RULES_SARIF = {
