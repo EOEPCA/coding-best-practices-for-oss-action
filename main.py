@@ -4,7 +4,22 @@ import json
 import logging
 import sys
 
+
+# Custom Formatter to bridge Python Logging with GitHub Workflow Commands
+class GitHubActionsFormatter(logging.Formatter):
+    def format(self, record):
+        if record.levelno == logging.ERROR:
+            return f"::error file=main.py::{record.getMessage()}"
+        if record.levelno == logging.WARNING:
+            return f"::warning file=main.py::{record.getMessage()}"
+        return record.getMessage()
+
+# Setup logger
 logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(GitHubActionsFormatter())
+logger.addHandler(handler)
 
 
 ENGINE_ID = "Coding BP for OSS Validator"
