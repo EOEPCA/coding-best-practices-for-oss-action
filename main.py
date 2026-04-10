@@ -4,6 +4,8 @@ import json
 import logging
 import sys
 
+from pathlib import Path
+
 
 # Custom Formatter to bridge Python Logging with GitHub Workflow Commands
 class GitHubActionsFormatter(logging.Formatter):
@@ -19,7 +21,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(GitHubActionsFormatter())
-logger.addHandler(handler)
+logger.addHandler(handler)coding_best_practices_issues
 
 
 ENGINE_ID = "Coding BP for OSS Validator"
@@ -28,6 +30,7 @@ PATH_TO_CHECK = os.getenv("INPUT_PATH-TO-CHECK", ".")
 OUTPUT_FILE = os.getenv("INPUT_OUTPUT-FILE", "coding-best-practices-report.json")
 OUTPUT_FORMAT = os.getenv("INPUT_OUTPUT-FORMAT", "generic")
 WORKSPACE = os.getenv("GITHUB_WORKSPACE", "/github/workspace")
+DEFAULT_ANCHOR_FILE = "coding-best-practices-issues"
 
 RULES_SARIF = {
     "CBP001": {
@@ -97,11 +100,7 @@ def check_readme_file(target_path):
         "effortMinutes": 60,
         "primaryLocation": {
             "message": f"README.md file missing in the '{target_path}' folder.",
-            #"filePath": target_path,
-            # "filePath": ".",
-            # "filePath": "backend/README.md",
-            #"filePath": "sonar-project.properties",
-            "filePath": "issues",
+            "filePath": DEFAULT_ANCHOR_FILE,
         },
     }]
 
@@ -175,13 +174,17 @@ def run_validator():
         logger.error("Error: %s is not a valid directory.", PATH_TO_CHECK)
         sys.exit(1)
 
+    if not os.path.exists(DEFAULT_ANCHOR_FILE):
+        logger.info("Creating default anchor file %s", DEFAULT_ANCHOR_FILE)
+        Path(DEFAULT_ANCHOR_FILE).touch()
+
     issues = run_checks()
 
     if OUTPUT_FORMAT.lower() == "saref":
         report = generate_sarif_report(issues)
     else:
         report = generate_generic_report(issues)
-    
+
     with open(OUTPUT_FILE, "w") as f:
         json.dump(report, f, indent=2)
     logger.info("Successfully saved: %s", OUTPUT_FILE)
