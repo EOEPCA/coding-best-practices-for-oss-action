@@ -1,0 +1,18 @@
+name: 'Coding Best Practices for Open Source Software'
+description: 'Checks if a project complies with coding best practices'
+inputs:
+  path-to-check:
+    description: 'The directory to check'
+    required: false
+    default: '.'
+  output-file:
+    description: 'The report (output) file name'
+    required: false
+    default: 'coding-best-practices-report.json'
+  output-format:
+    description: 'The output report format: "generic" (SonarQube) or "sarif" (v2.1.0)'
+    required: false
+    default: 'generic'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
