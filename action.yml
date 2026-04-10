@@ -5,6 +5,10 @@ inputs:
     description: 'The directory to check'
     required: false
     default: '.'
+  default-anchor-file:
+    description: 'Default anchor file for issues not related to specific files'
+    required: false
+    default: 'coding-best-practices-issues.md'
   output-file:
     description: 'The report (output) file name'
     required: false

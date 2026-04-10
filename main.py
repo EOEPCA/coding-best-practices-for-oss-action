@@ -29,8 +29,8 @@ ENGINE_ID = "Coding BP for OSS Validator"
 PATH_TO_CHECK = os.getenv("INPUT_PATH-TO-CHECK", ".")
 OUTPUT_FILE = os.getenv("INPUT_OUTPUT-FILE", "coding-best-practices-report.json")
 OUTPUT_FORMAT = os.getenv("INPUT_OUTPUT-FORMAT", "generic")
+DEFAULT_ANCHOR_FILE = os.getenv("INPUT_DEFAULT-ANCHOR-FILE", "coding-best-practices-issues.md")
 WORKSPACE = os.getenv("GITHUB_WORKSPACE", "/github/workspace")
-DEFAULT_ANCHOR_FILE = "coding-best-practices-issues"
 
 RULES_SARIF = {
     "CBP001": {
