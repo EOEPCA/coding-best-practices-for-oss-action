@@ -21,7 +21,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(GitHubActionsFormatter())
-logger.addHandler(handler)coding_best_practices_issues
+logger.addHandler(handler)
 
 
 ENGINE_ID = "Coding BP for OSS Validator"
