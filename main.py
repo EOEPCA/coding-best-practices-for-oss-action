@@ -26,10 +26,10 @@ logger.addHandler(handler)
 
 ENGINE_ID = "Coding BP for OSS Validator"
 
-PATH_TO_CHECK = os.getenv("INPUT_PATH-TO-CHECK", ".")
-OUTPUT_FILE = os.getenv("INPUT_OUTPUT-FILE", "coding-best-practices-report.json")
-OUTPUT_FORMAT = os.getenv("INPUT_OUTPUT-FORMAT", "generic")
-DEFAULT_ANCHOR_FILE = os.getenv("INPUT_DEFAULT-ANCHOR-FILE", "coding-best-practices-issues.md")
+PATH_TO_CHECK = os.getenv("INPUT_PATH-TO-CHECK", os.getenv("INPUT_PATH_TO_CHECK", "."))
+OUTPUT_FILE = os.getenv("INPUT_OUTPUT-FILE", os.getenv("INPUT_OUTPUT_FILE", "coding-best-practices-report.json"))
+OUTPUT_FORMAT = os.getenv("INPUT_OUTPUT-FORMAT", os.getenv("INPUT_OUTPUT_FORMAT", "generic"))
+DEFAULT_ANCHOR_FILE = os.getenv("INPUT_DEFAULT-ANCHOR-FILE", os.getenv("INPUT_DEFAULT_ANCHOR_FILE", "coding-best-practices-issues.md"))
 WORKSPACE = os.getenv("GITHUB_WORKSPACE", "/github/workspace")
 
 RULES_SARIF = {
