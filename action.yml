@@ -17,6 +17,10 @@ inputs:
     description: 'The output report format: "generic" (SonarQube) or "sarif" (v2.1.0)'
     required: false
     default: 'generic'
+  config-file:
+    description: 'YAML file enabling/disabling rules and overriding severities'
+    required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'

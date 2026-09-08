@@ -1,0 +1,44 @@
+# examples/sample-config.yaml
+# Severities: MINOR, MEDIUM, MAJOR, CRITICAL
+rules:
+  # Enable/disable and configure rules individually
+  DOC001:
+    enabled: true
+    severity: MINOR
+  SEC001:
+    enabled: false
+    severity: CRITICAL
+  LNG001:
+    # Exotic languages
+    enabled: true
+    severity: MINOR
+    # Safety cap on number of files sent to Claude (default: 20)
+    max_files: 20
+    # Number of lines to extract per file (default: 5)
+    lines: 5
+  LNG002:
+    # Too many languages
+    enabled: true
+    severity: MINOR
+    # Safety cap on number of files sent to Claude (default: 20)
+    max_files: 20
+    # Number of lines to extract per file (default: 5)
+    lines: 5
+    # A null value means the corresponding severity is not used
+    warning_threshold: 10
+    error_threshold: 20
+    critical_threshold: null
+categories:
+  # Allows disabling all the rules belonging to the same category at once
+  security:
+    enabled: true
+  style:
+    enabled: false
+dependencies:
+  # Allows disabling all the rules having specific dependencies at once
+  ai:
+    enabled: true
+  ruff:
+    enabled: true
+  flake8:
+    enabled: true

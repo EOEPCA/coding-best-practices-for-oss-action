@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coding-best-practices-for-oss"
+description = "Checks whether a project complies with coding best practices"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dynamic = ["version"]
+dependencies = [
+    "PyYAML>=6.0",
+    "cachetools>=7.0",
+    "openai>=3.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+coding-best-practices-for-oss = "coding_best_practices_for_oss.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "coding_best_practices_for_oss.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.uv.workspace]
+members = [
+    "myproject",
+]

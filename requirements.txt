@@ -1,1 +1,3 @@
-# 
+# Runtime dependencies are declared in pyproject.toml.
+# Development setup (editable install with the test extras):
+-e .[dev]
