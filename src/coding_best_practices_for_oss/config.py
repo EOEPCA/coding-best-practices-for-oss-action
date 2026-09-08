@@ -47,13 +47,13 @@ SKIP_FILE_NAMES = {
 }
 
 SKIP_FILE_EXTENSIONS = {
-    ".log", ".tmp", ".out",
+    ".log", ".tmp", ".out", ".err",
 }
 
 # Extensions that are almost always binary — skip without even opening them.
 BINARY_FILE_EXTENSIONS = {
-    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".webp",
-    ".pdf", ".zip", ".tar", ".gz", ".bz2", ".xz", ".7z", ".rar",
+    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".webp", ".tif", ".tiff",
+    ".pdf", ".zip", ".tar", ".gz", ".tgz", ".bz2", ".xz", ".7z", ".rar",
     ".exe", ".dll", ".so", ".dylib", ".bin", ".o", ".a",
     ".pyc", ".pyo", ".class", ".jar",
     ".woff", ".woff2", ".ttf", ".eot",

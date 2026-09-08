@@ -18,7 +18,7 @@ from coding_best_practices_for_oss.config import (
 
 logger = logging.getLogger(__name__)
 
-@cached
+@cached(cache={})
 def query_model(prompt: str) -> dict:
     """
     """
@@ -53,7 +53,7 @@ def query_model(prompt: str) -> dict:
         logger.error("❌ Failed to parse as JSON: %s: %s", text, ex)
         raise ex
 
-@cached
+@cached(cache={})
 def get_models():
     """
     """
