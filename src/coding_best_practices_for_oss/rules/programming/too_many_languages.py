@@ -7,7 +7,7 @@ import sys
 from coding_best_practices_for_oss.core.issue import Impact, ImpactSeverity, SoftwareQuality
 from coding_best_practices_for_oss.core.rule import PROJECT_SCOPE, Rule
 from coding_best_practices_for_oss.utils.file_tools import find_text_files, extract_head
-from coding_best_practices_for_oss.utils.ml_tools import query_model
+from coding_best_practices_for_oss.utils.ai_tools import query_model
 
 
 logger = logging.getLogger(__name__)

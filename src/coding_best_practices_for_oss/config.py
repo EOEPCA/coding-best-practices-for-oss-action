@@ -12,11 +12,6 @@ logger = logging.getLogger(__name__)
 
 ENGINE_ID = "Coding BP for OSS Validator"
 
-ML_MODEL = "claude-sonnet-4-6"
-ML_MODEL_API = ""
-ML_MODEL_KEY = ""
-
-ML_MODEL_MAX_TOKENS = 8000
 
 def env(input_name: str, default: str = "") -> str:
     """Value of a GitHub Action input, dash or underscore spelling."""
@@ -26,15 +21,21 @@ def env(input_name: str, default: str = "") -> str:
         os.getenv(f"INPUT_{upper.replace('-', '_')}", default),
     )
 
+WORKSPACE = os.getenv("GITHUB_WORKSPACE", "/github/workspace")
 
 PATH_TO_CHECK = env("path-to-check", ".")
 OUTPUT_FILE = env("output-file", "coding-best-practices-report.json")
 OUTPUT_FORMAT = env("output-format", "generic")
 DEFAULT_ANCHOR_FILE = env("default-anchor-file", "coding-best-practices-issues.md")
 CONFIG_FILE = env("config-file", "")
-WORKSPACE = os.getenv("GITHUB_WORKSPACE", "/github/workspace")
 
-HELP_BASE_URL = os.getenv("HELP_BASE_URL", "https://readthedocs.org/coding-best-practices-for-oss")
+AI_MODEL_PROVIDER = env("ai-model-provider", "")
+AI_MODEL_BASE_URL = env("ai-model-base-url", "").rstrip('/')
+AI_MODEL_API_KEY = env("ai-model-api-key", "")
+AI_MODEL_NAME = env("ai-model-name", "")
+AI_MODEL_MAX_TOKENS = 8000
+
+HELP_BASE_URL = os.getenv("HELP-BASE-URL", "https://readthedocs.org/coding-best-practices-for-oss")
 
 # Directories to skip entirely — VCS internals, dependency/build caches, etc.
 SKIP_DIR_NAMES = {
@@ -61,62 +62,8 @@ BINARY_FILE_EXTENSIONS = {
     ".db", ".sqlite", ".sqlite3",
 }
 
-MAX_FILE_SIZE_FOR_SNIFF = 8192  # bytes read to decide binary vs text
-
-#OLLAMA_MODEL_NAME = "deepseek-coder"
-#OLLAMA_MODEL_NAME = "llama3.2:1b"
-#OLLAMA_MODEL_NAME = "llama3.1:8b"
-#OLLAMA_MODEL_NAME = "qwen2.5-coder:7b"
-#OLLAMA_MODEL_NAME = "qwen2.5-coder:3b"
-#OLLAMA_MODEL_NAME = "qwen3.6:35b-a3b"
-#OLLAMA_MODEL_NAME = "qwen2.5-coder:14B"
-OLLAMA_MODEL_NAME = "qwen2.5-coder:14B"
-
-#GEMINI_MODEL_NAME = "models/gemini-2.5-flash-lite"
-GEMINI_MODEL_NAME = "models/gemini-2.5-flash"
-CLAUDE_MODEL_NAME = "claude-sonnet-4.6"
-COPILOT_MODEL_NAME = "gpt-4o"
-CHATGPT_MODEL_NAME = "gpt-4o"
-
-# OpenAI compatible URLs
-#OLLAMA_OPENAI_URL = "http://yoda:11434/v1"
-OLLAMA_OPENAI_URL = "http://172.16.1.27:11434/v1"
-GEMINI_OPENAI_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
-CHATGPT_OPENAI_URL = "https://api.openai.com/v1"
-COPILOT_OPENAI_URL = "https://models.inference.ai.azure.com"
-CLAUDE_OPENAI_URL = "https://api.anthropic.com/v1"
-
-CLAUDE_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "TBD")
-
-ML_MODEL_API_KEY = CLAUDE_API_KEY
-ML_MODEL_BASE_URL = CLAUDE_OPENAI_URL
-
-ML_MODEL_PROVIDER = os.environ.get("ML_MODEL_PROVIDER", "Ollama")
-
-if ML_MODEL_PROVIDER == "Ollama":
-    ML_MODEL_BASE_URL = OLLAMA_OPENAI_URL
-    ML_MODEL_API_KEY = "ollama"
-    ML_MODEL_NAME = OLLAMA_MODEL_NAME
-elif ML_MODEL_PROVIDER in ["Anthropic", "Claude"]:
-    ML_MODEL_BASE_URL = CLAUDE_OPENAI_URL
-    ML_MODEL_API_KEY = CLAUDE_API_KEY
-    ML_MODEL_NAME = CLAUDE_MODEL_NAME
-elif ML_MODEL_PROVIDER in ["OpenAPI", "ChatGPT"]:
-    ML_MODEL_BASE_URL = CHATGPT_OPENAI_URL
-    ML_MODEL_API_KEY = CHATGPT_OPENAI_KEY
-    ML_MODEL_NAME = CHATGPT_MODEL_NAME
-elif ML_MODEL_PROVIDER in ["Google", "Gemini"]:
-    # https://aistudio.google.com/
-    ML_MODEL_BASE_URL = GEMINI_OPENAI_URL
-    ML_MODEL_API_KEY = CLAUDE_API_KEY
-    ML_MODEL_NAME = GEMINI_MODEL_NAME
-elif ML_MODEL_PROVIDER in ["Microsoft", "Copilot", "Azure"]:
-    ML_MODEL_BASE_URL = COPILOT_OPENAI_URL
-    ML_MODEL_API_KEY = COPILOT_OPENAI_KEY
-    ML_MODEL_NAME = COPILOT_MODEL_NAME
-else:
-    # We have a problem ...
-    raise("Unknown provider name: " + ML_MODEL_PROVIDER)
+# bytes read to decide binary vs text
+MAX_FILE_SIZE_FOR_SNIFF = 8192
 
 DEFAULT_CHAT_OPTIONS = {
     # Lock temperature to 0 for strict structural compliance
@@ -168,4 +115,12 @@ def load_config(config_file: str | Path | None = None) -> Mapping[str, Any]:
     
     logger.info("Loaded configuration file: %s", path)
 
+    # Disable rules depending on AI if AI settings are missing
+    if "" in [AI_MODEL_NAME, AI_MODEL_BASE_URL, AI_MODEL_API_KEY]:
+        if config.get("dependencies", {}).get("ai", {}).get("enabled", True):
+            # AI dependency not explicitly disabled in configuration
+            logger.warning(
+                "Disabling AI dependent rules due to missing connection properties."
+            )
+        config = config | {"dependencies": {"ai": {"enabled": False }}}
     return config

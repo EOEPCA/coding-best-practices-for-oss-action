@@ -6,11 +6,11 @@ from cachetools import cached
 from openai import OpenAI
 
 from coding_best_practices_for_oss.config import (
-    ML_MODEL_NAME,
-    ML_MODEL_PROVIDER,
-    ML_MODEL_BASE_URL,
-    ML_MODEL_API_KEY,
-    ML_MODEL_MAX_TOKENS,
+    AI_MODEL_NAME,
+    AI_MODEL_PROVIDER,
+    AI_MODEL_BASE_URL,
+    AI_MODEL_API_KEY,
+    AI_MODEL_MAX_TOKENS,
     DEFAULT_CHAT_OPTIONS,
     DEFAULT_GENERATE_OPTIONS,
 )
@@ -22,14 +22,14 @@ logger = logging.getLogger(__name__)
 def query_model(prompt: str) -> dict:
     """
     """
-    logger.debug("Querying model '%s' from '%s' ...", ML_MODEL_NAME, ML_MODEL_PROVIDER)
+    logger.debug("Querying model '%s' from '%s' ...", AI_MODEL_NAME, AI_MODEL_PROVIDER)
     client = OpenAI(
-        api_key = ML_MODEL_API_KEY,
-        base_url = ML_MODEL_BASE_URL,
+        api_key = AI_MODEL_API_KEY,
+        base_url = AI_MODEL_BASE_URL,
     )
     response = client.chat.completions.create(
-        model=ML_MODEL_NAME,
-        max_tokens=ML_MODEL_MAX_TOKENS,
+        model=AI_MODEL_NAME,
+        max_tokens=AI_MODEL_MAX_TOKENS,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.0,
         seed=42,
