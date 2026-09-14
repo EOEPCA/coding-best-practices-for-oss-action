@@ -18,7 +18,10 @@ def env(input_name: str, default: str = "") -> str:
     upper = input_name.upper()
     return os.getenv(
         f"INPUT_{upper.replace('_', '-')}",
-        os.getenv(f"INPUT_{upper.replace('-', '_')}", default),
+        os.getenv(
+            f"INPUT_{upper.replace('-', '_')}",
+            os.getenv(upper.replace('-', '_'), default)
+        )
     )
 
 WORKSPACE = os.getenv("GITHUB_WORKSPACE", "/github/workspace")
