@@ -1,10 +1,10 @@
-# rules/programming/missing_readme.py
+# rules/programming/too_many_languages.py
 import json
 import logging
 import os
 import sys
 
-from coding_best_practices_for_oss.core.issue import Impact, ImpactSeverity, SoftwareQuality
+from coding_best_practices_for_oss.core.issue import Severity, Impact, ImpactSeverity, SoftwareQuality
 from coding_best_practices_for_oss.core.rule import PROJECT_SCOPE, Rule
 from coding_best_practices_for_oss.utils.file_tools import find_text_files, extract_head
 from coding_best_practices_for_oss.utils.ai_tools import query_model
@@ -130,8 +130,8 @@ class TooManyLanguagesRule(Rule):
         if output == [] or output is None:
             return []
 
-        #language_count = sum(item["file_count"] for item in output["languages_summary"])
-        language_count = len(output["languages_summary"])
+        languages = [item["language"] for item in output["languages_summary"]]
+        language_count = len(languages)
         logger.info("Detected %s different languages used in '%s'", language_count, context.display_path)
 
         # Check thresholds for decreasing severities
@@ -145,7 +145,8 @@ class TooManyLanguagesRule(Rule):
             return [
                 context.issue(
                     f"Critical: Too many languages used in folder '{context.display_path}'"
-                    f" ({language_count} > {critical_threshold})"
+                    f" ({language_count} > {critical_threshold}): {', '.join(languages)}",
+                    severity=Severity.CRITICAL,
                 )
             ]
         if error_threshold and language_count >= error_threshold:
@@ -158,7 +159,8 @@ class TooManyLanguagesRule(Rule):
             return [
                 context.issue(
                     f"Error: Too many languages used in folder '{context.display_path}'"
-                    f" ({language_count} > {error_threshold})"
+                    f" ({language_count} > {error_threshold}): {', '.join(languages)}",
+                    severity=Severity.MAJOR,
                 )
             ]
         if warning_threshold and language_count >= warning_threshold:
@@ -171,14 +173,22 @@ class TooManyLanguagesRule(Rule):
             return [
                 context.issue(
                     f"Warning: Too many languages used in folder '{context.display_path}'"
-                    f" ({language_count} > {warning_threshold})"
+                    f" ({language_count} > {warning_threshold}): {', '.join(languages)}",
+                    severity=Severity.MINOR,
                 )
             ]
 
         logger.info(
-            "✅ %s: Identified %s different languages in '%s' (fine)",
+            "✅ %s: Identified %s different languages in '%s' (fine): %s",
             self.name,
             language_count,
             context.display_path,
+            ', '.join(languages),
         )
-        return []
+        # Return an info-level issue to inform the user about the test result
+        return [
+            context.issue(
+                f"Languages used below the warning threshold ({warning_threshold}): {', '.join(languages)}",
+                severity=Severity.INFO,
+            )
+        ]

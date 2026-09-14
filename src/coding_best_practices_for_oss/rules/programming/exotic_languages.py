@@ -1,8 +1,8 @@
-# rules/programming/missing_readme.py
+# rules/programming/exotic_languages.py
 import json
 import logging
 
-from coding_best_practices_for_oss.core.issue import Impact, ImpactSeverity, SoftwareQuality
+from coding_best_practices_for_oss.core.issue import Severity, Impact, ImpactSeverity, SoftwareQuality
 from coding_best_practices_for_oss.core.rule import PROJECT_SCOPE, Rule
 from coding_best_practices_for_oss.config import HELP_BASE_URL
 from coding_best_practices_for_oss.rules.programming.too_many_languages import TooManyLanguagesRule
@@ -36,8 +36,8 @@ class ExoticLanguagesRule(Rule):
         if output == [] or output is None:
             return []
 
-        all_languages = [item["language"] for item in output["languages_summary"]]
-        logger.debug("Formats and languages used in %s: %s", context.display_path, ", ".join(all_languages))
+        languages = [item["language"] for item in output["languages_summary"]]
+        logger.debug("Formats and languages used in %s: %s", context.display_path, ", ".join(languages))
         
         exotic_languages = [
             item["language"] for item in output["languages_summary"] if item["popularity"] == "exotic"
@@ -52,5 +52,12 @@ class ExoticLanguagesRule(Rule):
                 )
             ]
 
-        logger.info("✅ No exotic languages used in %s", context.display_path)
-        return []
+        lang_list = [f"{item['language']} ({item['popularity']})" for item in output["languages_summary"]]
+        logger.info("✅ No exotic languages used in %s: %s", context.display_path, ', '.join(lang_list))
+        # Return an info-level issue to inform the user about the test result
+        return [
+            context.issue(
+                f"No exotic languages used: {', '.join(lang_list)}",
+                severity=Severity.INFO,
+            )
+        ]
