@@ -89,7 +89,7 @@ def generate_generic_report(result: RunResult, *, engine_id: str = "") -> dict[s
     ]
     return {
         "rules": rules,
-        "issues": [issue.to_generic(engine_id) for issue in result.issues],
+        "issues": [issue.to_generic(engine_id, result.target_path) for issue in result.issues],
     }
 
 
@@ -138,7 +138,7 @@ def generate_sarif_report(result: RunResult) -> dict[str, Any]:
                         "rules": [_sarif_rule(rule) for rule in result.triggered_rules],
                     }
                 },
-                "results": [issue.to_sarif() for issue in result.issues],
+                "results": [issue.to_sarif(result.target_path) for issue in result.issues],
             }
         ],
     }

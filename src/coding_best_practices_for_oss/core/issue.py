@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+from os import path
 from typing import Any
 
 
@@ -139,18 +140,20 @@ class Location:
         }
         return {key: value for key, value in region.items() if value is not None}
 
-    def to_generic(self, default_message: str | None = None) -> dict[str, Any]:
+    def to_generic(self, target_path: str | None = ".", default_message: str | None = None) -> dict[str, Any]:
         location: dict[str, Any] = {
             "message": self.message or default_message or "",
-            "filePath": self.file_path,
+            "filePath": path.join(target_path, self.file_path),
         }
         text_range = self.text_range()
         if text_range:
             location["textRange"] = text_range
         return location
 
-    def to_sarif(self) -> dict[str, Any]:
-        physical_location: dict[str, Any] = {"artifactLocation": {"uri": self.file_path}}
+    def to_sarif(self, target_path: str | None = ".") -> dict[str, Any]:
+        physical_location: dict[str, Any] = {
+            "artifactLocation": {"uri": path.join(target_path, self.file_path)}
+        }
         region = self.region()
         if region:
             physical_location["region"] = region
@@ -210,24 +213,24 @@ class Issue:
             self.message,
         )
 
-    def to_generic(self, engine_id: str | None = None) -> dict[str, Any]:
+    def to_generic(self, engine_id: str | None = None, target_path: str | None = ".") -> dict[str, Any]:
         """SonarQube generic issue import entry."""
         issue: dict[str, Any] = {
             "ruleId": self.rule_id,
             "engineId": self.engine_id or engine_id or "",
-            "primaryLocation": self.location.to_generic(default_message=self.message),
+            "primaryLocation": self.location.to_generic(target_path, default_message=self.message),
         }
         if self.effort_minutes is not None:
             issue["effortMinutes"] = self.effort_minutes
         if self.secondary_locations:
             issue["secondaryLocations"] = [
-                location.to_generic() for location in self.secondary_locations
+                location.to_generic(target_path) for location in self.secondary_locations
             ]
         return issue
 
-    def to_sarif(self) -> dict[str, Any]:
+    def to_sarif(self, target_path: str | None = ".") -> dict[str, Any]:
         """SARIF 2.1.0 result object."""
-        primary_location = self.location.to_sarif()
+        primary_location = self.location.to_sarif(target_path)
         # The result already carries the message, no need to repeat it.
         if primary_location.get("message", {}).get("text") == self.message:
             del primary_location["message"]
@@ -239,7 +242,7 @@ class Issue:
         }
         if self.secondary_locations:
             result["relatedLocations"] = [
-                location.to_sarif() for location in self.secondary_locations
+                location.to_sarif(target_path) for location in self.secondary_locations
             ]
         if self.properties:
             result["properties"] = dict(self.properties)
