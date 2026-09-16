@@ -3,6 +3,7 @@
 # GitHub Actions exposes an input "path-to-check" as INPUT_PATH-TO-CHECK, but
 # some runners/shells normalise the dashes to underscores, so both spellings are
 # accepted (see `env()`).
+import importlib.util
 import logging
 import os
 from pathlib import Path
@@ -125,5 +126,14 @@ def load_config(config_file: str | Path | None = None) -> Mapping[str, Any]:
             logger.warning(
                 "Disabling AI dependent rules due to missing connection properties."
             )
-        config = config | {"dependencies": {"ai": {"enabled": False }}}
+        config["dependencies"]["ai"] = {"enabled": False}
+    
+    # Disable using "ruff" if the "ruff" module cannot be imported
+    if importlib.util.find_spec("ruff") is None:
+        if config.get("dependencies", {}).get("ruff", {}).get("enabled", True):
+            # Ruff dependency not explicitly disabled in configuration
+            logger.warning(
+                "Disabling 'ruff' dependent rules due to missing library."
+            )
+        config["dependencies"]["ruff"] = {"enabled": False}
     return config
