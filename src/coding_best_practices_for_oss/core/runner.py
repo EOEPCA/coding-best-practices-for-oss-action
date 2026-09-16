@@ -26,7 +26,7 @@ class RunResult:
     rules: list[Rule] = field(default_factory=list)  # rules that actually ran
     disabled: list[str] = field(default_factory=list)  # rule ids, from the config
     errors: list[str] = field(default_factory=list)  # rules that raised
-    target_path: str = "."
+    display_path: str = "."
     files_checked: int = 0
     duration: float = 0.0
 
@@ -88,7 +88,7 @@ class Runner:
 
         started = time.perf_counter()
         result = RunResult()
-        result.target_path = self.target_path
+        result.display_path = self.context.display_path
 
         enabled = self._enabled_rules(result)
         result.rules = enabled
