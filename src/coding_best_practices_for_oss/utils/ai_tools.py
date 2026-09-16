@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Any
 
 from cachetools import cached
 #from anthropic import Anthropic
@@ -19,7 +20,7 @@ from coding_best_practices_for_oss.config import (
 logger = logging.getLogger(__name__)
 
 @cached(cache={})
-def query_model(prompt: str) -> dict:
+def query_model(prompt: str, **kwargs: Any) -> dict:
     """
     """
     logger.debug("Querying model '%s' from '%s' ...", AI_MODEL_NAME, AI_MODEL_PROVIDER)
@@ -27,18 +28,40 @@ def query_model(prompt: str) -> dict:
         api_key = AI_MODEL_API_KEY,
         base_url = AI_MODEL_BASE_URL,
     )
-    response = client.chat.completions.create(
-        model=AI_MODEL_NAME,
-        max_tokens=AI_MODEL_MAX_TOKENS,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.0,
-        seed=42,
+
+    request_payload: Dict[str, Any] = {
+        "model": AI_MODEL_NAME,
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": AI_MODEL_MAX_TOKENS,
+        "temperature": 0.0,
         #format=json_schema,
         #stream=False,
         #"num_thread": 12,
         #"num_ctx": 65536,  # Set a very high context size limit
         #"num_predict": 1,  # Stop after reading the prompt
-    )
+        **kwargs,
+    }
+
+    seed = 42
+
+    is_gemini = "gemini" in AI_MODEL_NAME.lower() or "googleapis.com" in AI_MODEL_BASE_URL
+    if is_gemini:
+        # "seed" is not supported by the Google Chat endpoint: 
+        # https://ai.google.dev/gemini-api/docs/openai#extra-body
+        # request_payload["extra_body"] = {
+        #     'extra_body': {
+        #         'google': {
+        #             'seed': seed
+        #         }
+        #     }
+        # }
+        pass
+    else:
+        # Standard top-level seed for OpenAI models
+        request_payload["seed"] = seed
+    logger.debug("AI model request payload: %s", request_payload)
+
+    response = client.chat.completions.create(**request_payload)
     text = response.choices[0].message.content.strip()
 
     if text.startswith("```"):
