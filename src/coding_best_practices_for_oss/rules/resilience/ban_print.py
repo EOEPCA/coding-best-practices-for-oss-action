@@ -2,10 +2,7 @@
 #
 # Log the errors, log the progress
 #
-import json
 import logging
-
-from pathlib import Path
 
 from coding_best_practices_for_oss.core.issue import Severity, Impact, ImpactSeverity, SoftwareQuality
 from coding_best_practices_for_oss.core.rule import PROJECT_SCOPE, Rule

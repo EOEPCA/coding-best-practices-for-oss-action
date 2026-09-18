@@ -3,7 +3,6 @@ import logging
 from typing import Any
 
 from cachetools import cached
-#from anthropic import Anthropic
 from openai import OpenAI
 
 from coding_best_practices_for_oss.config import (

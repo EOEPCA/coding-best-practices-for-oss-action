@@ -88,7 +88,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--config-file",
         default=config.CONFIG_FILE,
-        help="YAML file enabling/disabling rules and overriding severities",
+        help="YAML file for enabling/disabling and configuring rules, categories and dependencies",
     )
     parser.add_argument(
         "--fail-on-issues",
