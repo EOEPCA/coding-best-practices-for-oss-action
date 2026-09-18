@@ -8,6 +8,7 @@ from coding_best_practices_for_oss.config import (
     SKIP_FILE_NAMES,
     SKIP_FILE_EXTENSIONS,
     BINARY_FILE_EXTENSIONS,
+    PYTHON_FILE_EXTENSIONS,
     MAX_FILE_SIZE_FOR_SNIFF,
 )
 
@@ -47,10 +48,31 @@ def find_text_files(root: Path):
         if path.suffix.lower() in BINARY_FILE_EXTENSIONS:
             continue
         if is_binary(path):
-            logger.debug("Path is binary: %s", path)
             continue
-        logger.debug("Path is text: %s", path)
+        logger.debug("Text file: %s", path)
         yield path
+
+
+def find_python_files(root: Path):
+    """Yield all Python script file paths under root, recursively, skipping known noise dirs."""
+    for path in root.rglob("*"):
+        if not path.is_file():
+            continue
+        if any(part in SKIP_DIR_NAMES for part in path.parts):
+            continue
+        if any(part in SKIP_FILE_NAMES for part in path.parts):
+            continue
+        if path.suffix.lower() in SKIP_FILE_EXTENSIONS:
+            continue
+        if path.suffix.lower() in BINARY_FILE_EXTENSIONS:
+            continue
+        if is_binary(path):
+            continue
+        if path.suffix.lower() not in PYTHON_FILE_EXTENSIONS:
+            continue
+        logger.debug("Python script: %s", path)
+        yield path
+
 
 @cached(cache={})
 def extract_head(path: Path, n_lines: int) -> str:

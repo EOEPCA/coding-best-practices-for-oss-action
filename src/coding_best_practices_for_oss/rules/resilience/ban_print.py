@@ -1,6 +1,6 @@
-# rules/programming/use_logging.py
+# rules/programming/ban_print.py
 #
-# Log the errors, log the progress
+# Do not use print()/pprint() in Python code
 #
 import logging
 
@@ -40,7 +40,6 @@ class BanPrintRule(Rule):
         # Use "ruff" and restrict to rules "T201" for print() and "T203" for pprint()
         # Output the results in JSON
         # Exit code 1 is normal, not an error
-        #report = self._check_print_usage(context.path())
         violations = ruff(context.path(), select="T20")
         issues = []
         if violations:

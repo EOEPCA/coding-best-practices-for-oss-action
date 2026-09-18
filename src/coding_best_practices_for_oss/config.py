@@ -66,6 +66,10 @@ BINARY_FILE_EXTENSIONS = {
     ".db", ".sqlite", ".sqlite3",
 }
 
+PYTHON_FILE_EXTENSIONS = {
+    ".py",
+}
+
 # bytes read to decide binary vs text
 MAX_FILE_SIZE_FOR_SNIFF = 8192
 
