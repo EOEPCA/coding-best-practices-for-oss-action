@@ -95,8 +95,9 @@ class LoggingInExceptRule(Rule):
         for filepath in find_python_files(context.path()):
             with open(filepath, "r", encoding="utf-8") as file:
                 source_code = file.read()
-            logger.debug("Checking: %s", filepath)
-            """Parses source code string and returns list of unlogged except blocks."""
+            relpath = context.relative(filepath)
+            logger.debug("Checking: %s", relpath)
+            # Parse source code string and returns list of unlogged except blocks.
             tree = ast.parse(source_code, filename=filepath)
             visitor = UnloggedExceptVisitor(context, filepath)
             visitor.visit(tree)

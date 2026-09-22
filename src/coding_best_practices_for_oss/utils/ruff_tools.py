@@ -52,7 +52,8 @@ def exec_ruff(path_to_check: str, select: list[str] = []) -> dict:
 
     violations = [
         {
-            "file": v["filename"],
+            # Return relative file paths
+            "file": str(Path(v["filename"]).relative_to(path_to_check)),
             "line": v["location"]["row"],
             "column": v["location"]["column"],
             "code": v["code"],

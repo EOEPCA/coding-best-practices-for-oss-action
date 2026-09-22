@@ -26,7 +26,7 @@ class RunResult:
     rules: list[Rule] = field(default_factory=list)  # rules that actually ran
     disabled: list[str] = field(default_factory=list)  # rule ids, from the config
     errors: list[str] = field(default_factory=list)  # rules that raised
-    display_path: str = "."
+    display_path: str = ""
     files_checked: int = 0
     duration: float = 0.0
 

@@ -140,7 +140,7 @@ class Location:
         }
         return {key: value for key, value in region.items() if value is not None}
 
-    def to_generic(self, target_path: str | None = ".", default_message: str | None = None) -> dict[str, Any]:
+    def to_generic(self, target_path: str = "", default_message: str | None = None) -> dict[str, Any]:
         location: dict[str, Any] = {
             "message": self.message or default_message or "",
             "filePath": path.join(target_path, self.file_path),
@@ -150,7 +150,7 @@ class Location:
             location["textRange"] = text_range
         return location
 
-    def to_sarif(self, target_path: str | None = ".") -> dict[str, Any]:
+    def to_sarif(self, target_path: str = "") -> dict[str, Any]:
         physical_location: dict[str, Any] = {
             "artifactLocation": {"uri": path.join(target_path, self.file_path)}
         }

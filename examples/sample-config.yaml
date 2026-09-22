@@ -28,6 +28,11 @@ rules:
     warning_threshold: 10
     error_threshold: 20
     critical_threshold: null
+  RES001:
+    # Do not use print/pprint
+    enabled: true
+    # Should the print/pprint calls be ignored in main entry points (TBW)
+    ignore_print_in_main: true
 categories:
   # Allows disabling all the rules belonging to the same category at once
   security:

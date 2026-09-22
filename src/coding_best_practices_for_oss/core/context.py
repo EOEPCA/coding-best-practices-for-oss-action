@@ -186,6 +186,8 @@ class RuleContext:
 
     def __post_init__(self) -> None:
         self.display_path = self.display_path or str(self.target_path)
+        if self.display_path == ".":
+            self.display_path = ""
         self.target_path = Path(self.target_path).resolve()
 
     # -- narrowing -----------------------------------------------------------

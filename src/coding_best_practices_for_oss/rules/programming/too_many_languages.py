@@ -32,8 +32,8 @@ class TooManyLanguagesRule(Rule):
     def _build_prompt(file_heads: list[tuple[str, str]]) -> str:
         """file_heads: list of (relative_path, head_text) tuples."""
         entries = []
-        for rel_path, head in file_heads:
-            entries.append(f"### File: {rel_path}\n```\n{head}\n```\n")
+        for relpath, head in file_heads:
+            entries.append(f"### File: {relpath}\n```\n{head}\n```\n")
         joined = "\n".join(entries)
 
         #You are analyzing a codebase, not the structure or the purpose of the files.
@@ -101,10 +101,10 @@ class TooManyLanguagesRule(Rule):
 
         file_heads = []
         for path in file_paths:
-            rel_path = str(path.relative_to(context.path()))
+            relpath = context.relative(path)
             head = extract_head(path, lines)
             if head.strip():  # skip empty files
-                file_heads.append((rel_path, head))
+                file_heads.append((relpath, head))
 
         logger.debug(f"Extracted heads from {len(file_heads)} file(s) — sending to AI for analysis...\n")
 

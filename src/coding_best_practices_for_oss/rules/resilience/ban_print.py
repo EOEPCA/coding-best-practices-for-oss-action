@@ -44,7 +44,7 @@ class BanPrintRule(Rule):
         issues = []
         if violations:
             # Keeping this "print()" call for testing purpose
-            print(f"❌ Found {len(violations)} print()/pprint() usage(s):")
+            print(f"Keeping this 'print()' call for testing purpose")
             logging.info("❌ Found %s print()/pprint() usage(s):", len(violations))
             for v in violations:
                 logging.info("%s:%s:%s [ruff %s] %s", v['file'], v['line'], v['column'], v['code'], v['message'])
