@@ -1,19 +1,21 @@
-# rules/programming/use_logging.py
+# rules/programming/logging_in_except.py
 #
 # Log the errors, log the progress
 #
 import ast
 import json
-import logging
 import os
 import sys
 
 from coding_best_practices_for_oss.core.issue import Severity, Impact, ImpactSeverity, SoftwareQuality
 from coding_best_practices_for_oss.core.rule import PROJECT_SCOPE, Rule
 from coding_best_practices_for_oss.utils.file_tools import find_python_files
+from coding_best_practices_for_oss.utils.log_tools import getLogger
 
 
-logger = logging.getLogger(__name__)
+RULE_ID = "RES002"
+
+logger = getLogger(__name__, RULE_ID)
 
 DESCRIPTION = """<p>The Python 'logging' library should be used to report about progress and errors.</p>
 """
@@ -78,7 +80,7 @@ class UnloggedExceptVisitor(ast.NodeVisitor):
 
 
 class LoggingInExceptRule(Rule):
-    id = "RES002"
+    id = RULE_ID
     name = "Use Python logging in except"
     description = DESCRIPTION
     default_severity = "MINOR"
@@ -103,5 +105,5 @@ class LoggingInExceptRule(Rule):
             visitor.visit(tree)
             logger.debug("Issues: %s", visitor.issues)
             issues.extend(visitor.issues)
-        logging.info("❌ Found %s except blocks without logging", len(issues))
+        logger.info("❌ Found %s except blocks without logging", len(issues))
         return issues

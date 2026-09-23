@@ -1,6 +1,5 @@
 # rules/programming/too_many_languages.py
 import json
-import logging
 import os
 import sys
 
@@ -8,9 +7,12 @@ from coding_best_practices_for_oss.core.issue import Severity, Impact, ImpactSev
 from coding_best_practices_for_oss.core.rule import PROJECT_SCOPE, Rule
 from coding_best_practices_for_oss.utils.file_tools import find_text_files, extract_head
 from coding_best_practices_for_oss.utils.ai_tools import query_model
+from coding_best_practices_for_oss.utils.log_tools import getLogger
 
 
-logger = logging.getLogger(__name__)
+RULE_ID = "LNG002"
+
+logger = getLogger(__name__, RULE_ID)
 
 DESCRIPTION = """<p>To increase maintainability, it is advised to avoid using too many different
 programming languages and data formats in the same project.</p>
@@ -18,7 +20,7 @@ programming languages and data formats in the same project.</p>
 
 
 class TooManyLanguagesRule(Rule):
-    id = "LNG002"
+    id = RULE_ID
     name = "Too Many Languages"
     description = DESCRIPTION
     default_severity = "MINOR"

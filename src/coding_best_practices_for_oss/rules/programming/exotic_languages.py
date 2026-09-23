@@ -1,13 +1,16 @@
 # rules/programming/exotic_languages.py
 import json
-import logging
 
 from coding_best_practices_for_oss.core.issue import Severity, Impact, ImpactSeverity, SoftwareQuality
 from coding_best_practices_for_oss.core.rule import PROJECT_SCOPE, Rule
 from coding_best_practices_for_oss.config import HELP_BASE_URL
 from coding_best_practices_for_oss.rules.programming.too_many_languages import TooManyLanguagesRule
+from coding_best_practices_for_oss.utils.log_tools import getLogger
 
-logger = logging.getLogger(__name__)
+
+RULE_ID = "LNG001"
+
+logger = getLogger(__name__, RULE_ID)
 
 DESCRIPTION = """<p>To increase maintainability, it is advised to avoid using data formats and
 programming languages lacking adoption, documentation, or regular fixes and release cycles.</p>
@@ -15,7 +18,7 @@ programming languages lacking adoption, documentation, or regular fixes and rele
 
 
 class ExoticLanguagesRule(Rule):
-    id = "LNG001"
+    id = RULE_ID
     name = "Exotic Languages"
     description = DESCRIPTION
     default_severity = "MINOR"

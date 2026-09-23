@@ -1,11 +1,12 @@
 # rules/documentation/missing_readme.py
-import logging
-
 from coding_best_practices_for_oss.core.issue import Impact, ImpactSeverity, SoftwareQuality
 from coding_best_practices_for_oss.core.rule import PROJECT_SCOPE, Rule
-from coding_best_practices_for_oss.config import HELP_BASE_URL
+from coding_best_practices_for_oss.utils.log_tools import getLogger
 
-logger = logging.getLogger(__name__)
+
+RULE_ID = "DOC001"
+
+logger = getLogger(__name__, RULE_ID)
 
 DESCRIPTION = """<p>A <code>README</code> file (md, rst, txt) should be included for project documentation and overview.</p>
 <p>Software documentation should contain, even briefly, the following information:</p>
@@ -20,7 +21,7 @@ DESCRIPTION = """<p>A <code>README</code> file (md, rst, txt) should be included
 
 
 class MissingReadmeRule(Rule):
-    id = "DOC001"
+    id = RULE_ID
     name = "Missing Documentation"
     description = DESCRIPTION
     default_severity = "MINOR"

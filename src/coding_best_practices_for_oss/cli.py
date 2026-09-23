@@ -16,8 +16,10 @@ from coding_best_practices_for_oss.core.report import (
     write_report,
 )
 from coding_best_practices_for_oss.core.runner import Runner
+from coding_best_practices_for_oss.utils.log_tools import getLogger
 
-logger = logging.getLogger("coding_best_practices_for_oss")
+
+logger = getLogger("coding_best_practices_for_oss")
 
 
 class GitHubActionsFormatter(logging.Formatter):

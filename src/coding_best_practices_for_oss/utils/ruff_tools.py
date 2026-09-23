@@ -1,11 +1,13 @@
 import json
-import logging
 import subprocess
 import sys
 
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
+from coding_best_practices_for_oss.utils.log_tools import getLogger
+
+
+logger = getLogger(__name__)
 
 def exec_ruff(path_to_check: str, select: list[str] = []) -> dict:
     """
@@ -62,3 +64,16 @@ def exec_ruff(path_to_check: str, select: list[str] = []) -> dict:
         for v in violations_raw
     ]
     return violations
+
+
+def new_issue(context, v: dict = {}):
+    return context.issue(
+        v["message"],
+        #severity=Severity.MINOR,
+        line=v["line"],
+        column=v["column"],
+        file_path=v["file"],
+    )
+
+def violation_string(v: dict = {}):
+    return f"{v['file']}:{v['line']}:{v['column']} [ruff {v['code']}] {v['message']}"

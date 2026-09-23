@@ -16,16 +16,18 @@ Usage:
     result = analyze_cli_help_support("my_script.py")
 """
 import ast
-import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from coding_best_practices_for_oss.core.issue import Severity, Impact, ImpactSeverity, SoftwareQuality
 from coding_best_practices_for_oss.core.rule import PROJECT_SCOPE, Rule
 from coding_best_practices_for_oss.utils.file_tools import find_python_files
+from coding_best_practices_for_oss.utils.log_tools import getLogger
 
 
-logger = logging.getLogger(__name__)
+RULE_ID = "DOC004"
+
+logger = getLogger(__name__, RULE_ID)
 
 DESCRIPTION = """<p>Python scripts meant to be executed on the command line should have a “--help” option.</p>
 """
@@ -263,7 +265,7 @@ if __name__ == "__main__":
 
 
 class PythonScriptHelpRule(Rule):
-    id = "DOC004"
+    id = RULE_ID
     name = "Python CLI scripts must provide help"
     description = DESCRIPTION
     default_severity = "MINOR"
@@ -288,7 +290,7 @@ class PythonScriptHelpRule(Rule):
                 logger.info("✅ Python CLI script provides help: %s", relpath)
                 continue
             for message in analysis.issues:
-                logging.info("❌ Python CLI script must provide help: %s: %s", relpath, message)
+                logger.info("❌ Python CLI script must provide help: %s: %s", relpath, message)
                 # See CliHelpAnalysis.issues(), above, for the generated issue messages
                 issues.append(context.issue(message, file_path=relpath,))
         logger.debug("Issues: %s", issues)

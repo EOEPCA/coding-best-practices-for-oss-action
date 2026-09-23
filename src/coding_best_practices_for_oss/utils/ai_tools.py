@@ -1,5 +1,4 @@
 import json
-import logging
 from typing import Any
 
 from cachetools import cached
@@ -14,9 +13,10 @@ from coding_best_practices_for_oss.config import (
     DEFAULT_CHAT_OPTIONS,
     DEFAULT_GENERATE_OPTIONS,
 )
+from coding_best_practices_for_oss.utils.log_tools import getLogger
 
 
-logger = logging.getLogger(__name__)
+logger = getLogger(__name__)
 
 @cached(cache={})
 def query_model(prompt: str, **kwargs: Any) -> dict:

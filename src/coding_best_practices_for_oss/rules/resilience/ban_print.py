@@ -2,20 +2,21 @@
 #
 # Do not use print()/pprint() in Python code
 #
-import logging
-
 from coding_best_practices_for_oss.core.issue import Severity, Impact, ImpactSeverity, SoftwareQuality
 from coding_best_practices_for_oss.core.rule import PROJECT_SCOPE, Rule
-from coding_best_practices_for_oss.utils.ruff_tools import exec_ruff as ruff
+from coding_best_practices_for_oss.utils.log_tools import getLogger
+from coding_best_practices_for_oss.utils.ruff_tools import exec_ruff as ruff, new_issue, violation_string
 
 
-logger = logging.getLogger(__name__)
+RULE_ID = "RES001"
+
+logger = getLogger(__name__, RULE_ID)
 
 DESCRIPTION = """<p>Calls to "print()/pprint()" but be banned. The Python logging library must be used instead.</p>
 """
 
 class BanPrintRule(Rule):
-    id = "RES001"
+    id = RULE_ID
     name = "No print calls"
     description = DESCRIPTION
     default_severity = "MAJOR"
@@ -24,16 +25,6 @@ class BanPrintRule(Rule):
     scope = PROJECT_SCOPE
     effort_minutes = 10
     impacts = (Impact(SoftwareQuality.MAINTAINABILITY, ImpactSeverity.MEDIUM),)
-
-    @staticmethod
-    def _new_issue(context, v: dict = {}):
-        return context.issue(
-            v["message"],
-            #severity=Severity.MINOR,
-            line=v["line"],
-            column=v["column"],
-            file_path=v["file"],
-        )
 
     def check(self, context):
         logger.debug("%s context: %s", self, context.rule_settings)
@@ -45,12 +36,12 @@ class BanPrintRule(Rule):
         if violations:
             # Keeping this "print()" call for testing purpose
             print(f"Keeping this 'print()' call for testing purpose")
-            logging.info("❌ Found %s print()/pprint() usage(s):", len(violations))
+            logger.info("❌ Found %s print()/pprint() usage(s):", len(violations))
             for v in violations:
-                logging.info("%s:%s:%s [ruff %s] %s", v['file'], v['line'], v['column'], v['code'], v['message'])
-                issues.append(self._new_issue(context, v))
+                logger.info(violation_string(v))
+                issues.append(new_issue(context, v))
         else:
-            logging.info("✅ No print()/pprint() usage found.")
+            logger.info("✅ No print()/pprint() usage found.")
             # Return an info-level issue to inform the user about the test result
             issues = [
                 context.issue("Usage of print()/pprint() not found", severity=Severity.INFO)

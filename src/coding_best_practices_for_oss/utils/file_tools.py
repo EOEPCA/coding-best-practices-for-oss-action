@@ -1,5 +1,3 @@
-import logging
-
 from cachetools import cached
 from pathlib import Path
 
@@ -12,8 +10,6 @@ from coding_best_practices_for_oss.config import (
     MAX_FILE_SIZE_FOR_SNIFF,
 )
 
-
-logger = logging.getLogger(__name__)
 
 @cached(cache={})
 def is_binary(path: Path) -> bool:
@@ -49,7 +45,6 @@ def find_text_files(root: Path):
             continue
         if is_binary(path):
             continue
-        # logger.debug("Text file: %s", path)
         yield path
 
 
@@ -70,7 +65,6 @@ def find_python_files(root: Path):
             continue
         if path.suffix.lower() not in PYTHON_FILE_EXTENSIONS:
             continue
-        # logger.debug("Python script: %s", path)
         yield path
 
 
