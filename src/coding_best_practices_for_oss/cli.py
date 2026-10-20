@@ -2,7 +2,7 @@
 #
 # Every input can also be given as a command line option, so that the exact
 # same code path can be run locally:
-#     python -m coding_best_practices_for_oss --path-to-check . --output-format sarif
+#     python -m coding_best_practices_for_oss --path-to-check . --output-format generic
 import argparse
 import logging
 import os
@@ -97,7 +97,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="exit with a non-zero status when issues are found",
     )
-    parser.add_argument("--verbose", action="store_true", help="enable debug logging")
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        default=(config.VERBOSE == "true"),
+        help="enable debug logging"
+    )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     return parser
 
@@ -106,6 +111,10 @@ def main(argv: list[str] | None = None) -> int:
     """Run the validator, return the process exit code."""
     args = build_parser().parse_args(argv)
     configure_logging(args.verbose)
+
+    if args.output_format == "text" and args.output_file.endswith(".json"):
+        args.output_file = args.output_file[:-5] + ".txt"
+        logger.warning("Adapting output file extension for text format: %s", args.output_file)
 
     runner = Runner(
         args.path_to_check,

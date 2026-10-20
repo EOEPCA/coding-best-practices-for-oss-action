@@ -32,7 +32,9 @@ OUTPUT_FILE = env("output-file", "coding-best-practices-report.json")
 OUTPUT_FORMAT = env("output-format", "generic")
 DEFAULT_ANCHOR_FILE = env("default-anchor-file", "coding-best-practices-issues.md")
 CONFIG_FILE = env("config-file", "")
+VERBOSE = env("verbose", "false")
 
+AI_MODEL_ENABLED = env("ai-model-enabled", "true")
 AI_MODEL_PROVIDER = env("ai-model-provider", "")
 AI_MODEL_BASE_URL = env("ai-model-base-url", "").rstrip('/')
 AI_MODEL_API_KEY = env("ai-model-api-key", "")
@@ -123,14 +125,18 @@ def load_config(config_file: str | Path | None = None) -> Mapping[str, Any]:
     
     logger.info("Loaded configuration file: %s", path)
 
-    # Disable rules depending on AI if AI settings are missing
-    if "" in [AI_MODEL_NAME, AI_MODEL_BASE_URL, AI_MODEL_API_KEY]:
-        if config.get("dependencies", {}).get("ai", {}).get("enabled", True):
-            # AI dependency not explicitly disabled in configuration
-            logger.warning(
-                "Disabling AI dependent rules due to missing connection properties."
-            )
+    if AI_MODEL_ENABLED == "false":
+        logger.info("AI integration disabled")
         config["dependencies"]["ai"] = {"enabled": False}
+    else:
+        # Disable rules depending on AI if AI settings are missing
+        if "" in [AI_MODEL_NAME, AI_MODEL_BASE_URL, AI_MODEL_API_KEY]:
+            if config.get("dependencies", {}).get("ai", {}).get("enabled", True):
+                # AI dependency not explicitly disabled in configuration
+                logger.warning(
+                    "Disabling AI dependent rules due to missing connection properties."
+                )
+            config["dependencies"]["ai"] = {"enabled": False}
     
     # Disable using "ruff" if the "ruff" module cannot be imported
     if importlib.util.find_spec("ruff") is None:
