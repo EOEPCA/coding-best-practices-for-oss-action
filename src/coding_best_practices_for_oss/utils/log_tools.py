@@ -19,3 +19,19 @@ def getLogger(name, prefix: str|None = None):
     logger.handlers.clear()
     logger.addHandler(handler)
     return logger
+
+
+def dupLogger(src_name: str, dest_name: str, clear_existing: bool =True):
+    src = logging.getLogger(src_name)
+    dest = logging.getLogger(dest_name)
+    dest.setLevel(src.level)
+    if clear_existing:
+        dest.handlers.clear()
+        dest.filters.clear()
+    for handler in src.handlers:
+        if handler not in dest.handlers:
+            dest.addHandler(handler)
+    for filter in src.filters:
+        if filter not in dest.filters:
+            dest.addFilter(filter)
+    dest.propagate = False

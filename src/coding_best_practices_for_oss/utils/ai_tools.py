@@ -13,10 +13,15 @@ from coding_best_practices_for_oss.config import (
     DEFAULT_CHAT_OPTIONS,
     DEFAULT_GENERATE_OPTIONS,
 )
-from coding_best_practices_for_oss.utils.log_tools import getLogger
+from coding_best_practices_for_oss.utils.log_tools import getLogger, dupLogger
 
 
 logger = getLogger(__name__)
+# Apply the same configuration to the openai and http* libraries
+dupLogger(__name__, "openai")
+dupLogger(__name__, "httpx2")
+dupLogger(__name__, "httpcore2")
+
 
 @cached(cache={})
 def query_model(prompt: str, **kwargs: Any) -> dict:

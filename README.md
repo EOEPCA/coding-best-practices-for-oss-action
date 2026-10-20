@@ -249,6 +249,8 @@ Detailed information about each rule and each detected issue can be found in the
 In this example GitHub workflow fragment, the tool is applied on the full content of the repository.
 GitHub Variables and Secret are used to set the AI model variables.
 
+When executed in a terminal (see above), a textual, human readable, output is preferred, however the `generic` format should be used when executed in a GitHub workflow, as this produces a report that may be submitted to SonarQube.
+
 See `action.yaml` for the definition and default values of the GitHub Action input variables.
 
 ```yaml
@@ -270,6 +272,7 @@ jobs:
           output-format: 'generic'
           default-anchor-file: 'backend/coding-best-practices-issues.md'
           config-file: 'examples/sample-config.yaml'
+          verbose: 'false'
           ai-model-provider: '${{ vars.CBP4OSS_AI_MODEL_PROVIDER }}'
           ai-model-base-url: '${{ vars.CBP4OSS_AI_MODEL_BASE_URL }}'
           ai-model-api-key: '${{ secrets.CBP4OSS_AI_MODEL_API_KEY }}'
