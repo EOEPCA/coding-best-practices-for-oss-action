@@ -18,6 +18,13 @@ DESCRIPTION = """<p>To increase maintainability, it is advised to avoid using to
 programming languages and data formats in the same project.</p>
 """
 
+DEFAULT_MAX_FILES = 20
+DEFAULT_LINES_TO_EXTRACT = 5
+
+# Priority order for categorical fields when merging language summaries
+POPULARITY_PRIORITY = {"popular": 3, "moderate": 2, "exotic": 1}
+TYPE_PRIORITY = {"code": 3, "markup": 2, "configuration": 1}
+
 
 class TooManyLanguagesRule(Rule):
     id = RULE_ID
@@ -46,7 +53,7 @@ class TooManyLanguagesRule(Rule):
 
         Then, across all files, produce a deduplicated list of the distinct
         languages detected, each with a popularity classification:
-        - "popular": widely used, large ecosystem (e.g. Shell, Python, JavaScript, Java, Go, C++, JSON, JSON Schema, YAML, TOML)
+        - "popular": widely used, large ecosystem (e.g. Text, Shell, Python, JavaScript, Java, Go, C++, JSON, JSON Schema, YAML, TOML)
         - "moderate": established but smaller community (e.g. Rust, Kotlin, Scala, R)
         - "exotic": niche, domain-specific, or rarely used outside specific contexts
             (e.g. Zig, Nim, INTERCAL, a custom DSL, esoteric languages)
@@ -89,35 +96,108 @@ class TooManyLanguagesRule(Rule):
         {joined}
         """
 
+    @staticmethod
+    def _merge_results(res1: dict[str, list], res2: dict[str, list]) -> dict[str, list]:
+        """Merges two analysis results.
+        - Concatenates unique 'files' based on ('path', 'language') composite values.
+        - Merges 'languages_summary' by 'language' values, summing file counts.
+        """
+        # Merge and deduplicate 'files' by (path, language) values
+        files_by_key: dict[tuple[str, str], dict[str, object]] = {}
+
+        for file_entry in res1.get("files", []) + res2.get("files", []):
+            if not isinstance(file_entry, dict):
+                continue
+            composite_key = (file_entry.get("path"), file_entry.get("language"))
+            if composite_key not in files_by_key:
+                files_by_key[composite_key] = file_entry
+
+        # Merge and deduplicate 'languages_summary' by language values
+        merged_languages: dict[str, dict[str, object]] = {}
+
+        for lang_entry in res1.get("languages_summary", []) + res2.get("languages_summary", []):
+            if not isinstance(lang_entry, dict):
+                continue
+            lang = lang_entry.get("language")
+            if not isinstance(lang, str):
+                continue
+            if lang not in merged_languages:
+                # Shallow copy entry so original dicts aren't mutated
+                merged_languages[lang] = dict(lang_entry)
+            else:
+                existing = merged_languages[lang]
+
+                # Sum file counts safely
+                existing_count = existing.get("file_count", 0)
+                new_count = lang_entry.get("file_count", 0)
+                c1 = existing_count if isinstance(existing_count, int) else 0
+                c2 = new_count if isinstance(new_count, int) else 0
+                existing["file_count"] = c1 + c2
+
+                # Preserve highest priority popularity
+                ex_pop = str(existing.get("popularity", ""))
+                new_pop = str(lang_entry.get("popularity", ""))
+                if POPULARITY_PRIORITY.get(new_pop, 0) > POPULARITY_PRIORITY.get(
+                    ex_pop, 0
+                ):
+                    existing["popularity"] = new_pop
+
+                # Preserve highest priority type (code > markup > configuration)
+                ex_type = str(existing.get("type", ""))
+                new_type = str(lang_entry.get("type", ""))
+                if TYPE_PRIORITY.get(new_type, 0) > TYPE_PRIORITY.get(ex_type, 0):
+                    existing["type"] = new_type
+
+        return {
+            "files": list(files_by_key.values()),
+            "languages_summary": list(merged_languages.values()),
+        }
+
+    @staticmethod
+    def _chunked(items: list, size: int):
+        """Yield successive chunks of at most `size` items from `items`."""
+        for i in range(0, len(items), size):
+            yield items[i : i + size]
+
     def _main(self, context):
         logger.debug("%s - Scanning %s ...", self.id, context.display_path)
-        max_files = context.rule_setting("max_files", 20)
-        lines = context.rule_setting("lines", 5)
+        max_files = context.rule_setting("max_files", DEFAULT_MAX_FILES)
+        lines = context.rule_setting("lines", DEFAULT_LINES_TO_EXTRACT)
         file_paths = list(find_text_files(context.path()))
         if not file_paths:
             logger.info("No non-binary files of interest found.")
             return []
+        logger.info(f"Found {len(file_paths)} non-binary files")
         if len(file_paths) > max_files:
-            logger.info(f"Found {len(file_paths)} files; will scan them in chucks with --max-files={max_files}")
-            file_paths = file_paths[: max_files]
+            logger.info(f"Scanning them in chunks with --max-files={max_files}")
 
-        file_heads = []
-        for path in file_paths:
-            relpath = context.relative(path)
-            head = extract_head(path, lines)
-            if head.strip():  # skip empty files
-                file_heads.append((relpath, head))
-
-        logger.debug(f"Extracted heads from {len(file_heads)} file(s) — sending to AI for analysis...\n")
-
-        prompt = TooManyLanguagesRule._build_prompt(file_heads)
-        try:
-            result = query_model(prompt)
-            return result
-        except json.JSONDecodeError as e:
-            logger.error(f"[ERROR] Could not parse model response as JSON: {e}", file=sys.stderr)
-
-        return []
+        chunk_id = 1
+        results = {"files": [], "languages_summary": []}
+        for chunk in TooManyLanguagesRule._chunked(file_paths, max_files):
+            logger.info("Chunk number %s", chunk_id)
+            chunk_id += 1
+            file_heads = []
+            for path in chunk:
+                relpath = context.relative(path)
+                head = extract_head(path, lines)
+                if head.strip():  # skip empty files
+                    file_heads.append((relpath, head))
+            if not file_heads:
+                continue
+            logger.debug(
+                f"Extracted heads from {len(file_heads)} file(s) — sending to AI for analysis..."
+            )
+            prompt = TooManyLanguagesRule._build_prompt(file_heads)
+            try:
+                chunk_result = query_model(prompt)
+                logger.debug("Chunk %s result: %s", chunk_id, chunk_result)
+            except json.JSONDecodeError as e:
+                logger.error(f"Could not parse model response as JSON: {e}")
+                continue
+            results = TooManyLanguagesRule._merge_results(results, chunk_result)
+        
+        logger.debug("Merged results: %s", results)
+        return results
 
     def check(self, context):
         logger.debug("%s context: %s", self, context.rule_settings)
@@ -129,7 +209,7 @@ class TooManyLanguagesRule(Rule):
         output = self._main(context)
         logger.debug("Result: %s", json.dumps(output, indent=2))
         # Stop here if no files of interest have been found
-        if output == [] or output is None:
+        if output == {} or output is None:
             return []
 
         languages = [item["language"] for item in output["languages_summary"]]
