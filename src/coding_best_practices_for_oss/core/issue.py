@@ -1,7 +1,8 @@
 # Issue/Finding dataclass (severity, message, location...)
 #
 # Rules never build report dictionaries by hand: they return `Issue` objects and
-# the serialisation to the formats supported by the action lives here.
+# the serialisation to the formats supported by the tool lives here.
+#   - "text"    -> Human readable plain text format
 #   - "generic" -> SonarQube generic issue import format
 #   - "sarif"   -> SARIF 2.1.0 result objects
 #

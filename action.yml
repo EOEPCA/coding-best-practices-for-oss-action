@@ -14,7 +14,7 @@ inputs:
     required: false
     default: 'coding-best-practices-report.json'
   output-format:
-    description: 'Output report format: "generic" (SonarQube) or "sarif" (v2.1.0)'
+    description: 'Output report format: "generic" (SonarQube), "sarif" (v2.1.0), or "text'
     required: false
     default: 'generic'
   config-file:

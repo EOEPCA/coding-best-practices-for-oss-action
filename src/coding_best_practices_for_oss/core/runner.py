@@ -29,6 +29,7 @@ class RunResult:
     display_path: str = ""
     files_checked: int = 0
     duration: float = 0.0
+    anchor_file: str = ""  # anchor file for issues not bound to specific code
 
     @property
     def rules_by_id(self) -> dict[str, Rule]:
@@ -116,6 +117,7 @@ class Runner:
 
         result.issues = _deduplicate(result.issues)
         result.duration = time.perf_counter() - started
+        result.anchor_file = self.context.anchor_file
 
         if self.create_anchor_file:
             self._ensure_anchor_file(result.issues)
@@ -130,7 +132,7 @@ class Runner:
             if self.context.is_enabled(rule):
                 enabled.append(rule)
             else:
-                logger.info("%s is disabled by the configuration", rule)
+                logger.info("[%s] Rule '%s' is disabled by the configuration", rule.id, rule.name)
                 result.disabled.append(rule.id)
         return enabled
 
@@ -140,7 +142,7 @@ class Runner:
             issues = rule.check(context)
         except Exception as error:
             location = f" on {context.file}" if context.file else ""
-            message = f"{rule} failed{location}: {error}"
+            message = f"[{rule.id}] '{rule.name}' failed{location}: {error}"
             logger.error(message)
             logger.debug("Traceback for %s", rule, exc_info=True)
             result.errors.append(message)
@@ -162,7 +164,7 @@ class Runner:
             else:
                 # Typically a rule still returning the report dictionaries the
                 # validator used before: it must build Issue objects instead.
-                message = f"{rule} returned {type(issue).__name__}, expected an Issue."
+                message = f"[{rule.id}] '{rule.name}' returned {type(issue).__name__}, expected an Issue."
                 logger.error(message)
                 result.errors.append(message)
         return validated
