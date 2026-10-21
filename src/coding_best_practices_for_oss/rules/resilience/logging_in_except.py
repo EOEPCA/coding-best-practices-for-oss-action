@@ -17,7 +17,7 @@ RULE_ID = "RES002"
 
 logger = getLogger(__name__, RULE_ID)
 
-DESCRIPTION = """<p>The Python 'logging' library should be used to report about progress and errors.</p>
+DESCRIPTION = """<p>The Python <pre>logging</pre> library should be used to report about progress and errors.</p>
 """
 
 

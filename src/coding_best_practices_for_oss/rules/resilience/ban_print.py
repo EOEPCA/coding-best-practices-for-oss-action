@@ -12,7 +12,8 @@ RULE_ID = "RES001"
 
 logger = getLogger(__name__, RULE_ID)
 
-DESCRIPTION = """<p>Calls to "print()/pprint()" but be banned. The Python logging library must be used instead.</p>
+DESCRIPTION = """<p>Calls to <pre>print()</pre> and <pre>pprint()</pre>" but be banned.
+The Python <pre>logging</pre> library must be used instead.</p>
 """
 
 class BanPrintRule(Rule):

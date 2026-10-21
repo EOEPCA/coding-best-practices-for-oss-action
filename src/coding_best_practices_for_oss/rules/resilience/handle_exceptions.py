@@ -13,11 +13,13 @@ RULE_ID = "RES003"
 logger = getLogger(__name__, RULE_ID)
 
 DESCRIPTION = """<p>Handle exceptions gracefully:</p>
-- No blind exceptions: BLE001 (flake8-blind-except)
-- Silent error suppression: S110 (try-except-pass)
-- Ignoring errors in loops: S112 (try-except-continue)
-- Unqualified except blocks: E722 (bare-except)
-- Broken finally blocks: B012 (jump-statement-in-finally, from flake8-bugbear)
+<ul>
+<li>No blind exceptions: BLE001 (flake8-blind-except)</li>
+<li>Silent error suppression: S110 (try-except-pass)</li>
+<li>Ignoring errors in loops: S112 (try-except-continue)</li>
+<li>Unqualified except blocks: E722 (bare-except)</li>
+<li>Broken finally blocks: B012 (jump-statement-in-finally, from flake8-bugbear)</li>
+</ul>
 """
 
 class HandleExceptionsRule(Rule):
