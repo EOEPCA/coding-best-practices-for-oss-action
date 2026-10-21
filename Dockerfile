@@ -1,14 +1,24 @@
-FROM python:3.11-slim
+FROM python:3.13-slim
 
-COPY pyproject.toml README.md LICENSE makeenv.sh /app/
+ARG GOSU_VERSION=1.17
+
+#  Install 'gosu' without using 'apt-get'
+RUN python3 -c "\
+import os, platform, urllib.request; \
+arch_map = {'x86_64': 'amd64', 'aarch64': 'arm64', 'armv7l': 'armhf'}; \
+arch = arch_map.get(platform.machine(), 'amd64'); \
+url = f'https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-{arch}'; \
+urllib.request.urlretrieve(url, '/usr/local/bin/gosu'); \
+os.chmod('/usr/local/bin/gosu', 0o755)" && \
+    /usr/local/bin/gosu --version
+
+COPY pyproject.toml README.md LICENSE /app/
 COPY src /app/src
 RUN pip install --no-cache-dir /app
 
-# GitHub Actions provides the workspace at /github/workspace
+COPY entrypoint.sh makeenv.sh /
+RUN chmod +x /entrypoint.sh /makeenv.sh
+
 WORKDIR /github/workspace
 
-# Configure non-root user (1000:100)
-RUN useradd -m -u 1000 -g 100 appuser
-USER 1000:100
-
-ENTRYPOINT ["python", "-m", "coding_best_practices_for_oss"]
+ENTRYPOINT ["/entrypoint.sh"]

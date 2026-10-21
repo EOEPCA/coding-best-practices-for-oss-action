@@ -141,8 +141,8 @@ For example, use the following commant to generate a file owned by the current u
 ```bash
 docker run --rm -it \
   -u $(id -u):$(id -g) \
-  -v .:/github/workspace  \
-  --entrypoint /app/makeenv.sh \
+  -v "$(pwd):/github/workspace"  \
+  --entrypoint /makeenv.sh \
   coding-best-practices-for-oss:2026-10-19
 ```
 
@@ -200,7 +200,7 @@ Execute the following command to analyse source code, replacing `<path-to-source
 ```bash
 docker run --rm -it \
   --env-file setup.env \
-  -v <path-to-source-code>:/github/workspace  \
+  -v "<path-to-source-code>:/github/workspace"  \
   coding-best-practices-for-oss:2026-10-19
 ```
 
