@@ -21,6 +21,10 @@ inputs:
     description: 'YAML file enabling/disabling rules and overriding severities'
     required: false
     default: ''
+  verbose:
+    description: 'Enable debug logging'
+    required: false
+    default: 'false'
   ai-model-provider:
     description: 'Free name of the model provider (e.g. Google, OpenAPI, Anthropic, Ollama)'
     required: false
@@ -40,3 +44,14 @@ inputs:
 runs:
   using: 'docker'
   image: 'Dockerfile'
+  env:
+    PATH_TO_CHECK: ${{ inputs.path-to-check }}
+    DEFAULT_ANCHOR_FILE: ${{ inputs.default-anchor-file }}
+    OUTPUT_FILE: ${{ inputs.output-file }}
+    OUTPUT_FORMAT: ${{ inputs.output-format }}
+    CONFIG_FILE: ${{ inputs.config-file }}
+    VERBOSE: ${{ inputs.verbose }}
+    AI_MODEL_PROVIDER: ${{ inputs.ai-model-provider }}
+    AI_MODEL_BASE_URL: ${{ inputs.ai-model-base-url }}
+    AI_MODEL_API_KEY: ${{ inputs.ai-model-api-key }}
+    AI_MODEL_NAME: ${{ inputs.ai-model-name }}
