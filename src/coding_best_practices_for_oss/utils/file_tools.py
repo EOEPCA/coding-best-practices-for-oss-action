@@ -1,4 +1,6 @@
+import re
 from cachetools import cached
+from fnmatch import fnmatch
 from pathlib import Path
 
 from coding_best_practices_for_oss.config import (
@@ -81,3 +83,64 @@ def extract_head(path: Path, n_lines: int) -> str:
     except (OSError, PermissionError) as e:
         return f"<could not read file: {e}>"
     return "\n".join(lines)
+
+# ------------------------------------------------
+# Schell Scripts
+# ------------------------------------------------
+
+SHELL_SHEBANG_RE = re.compile(
+    r"^#!\s*\S*/(?:env\s+)?(bash|csh|tcsh|ash|zsh|ksh|dash|fish|sh)\b"
+)
+
+SHELL_SCRIPT_PATTERNS = [
+    "*.sh",       # generic/POSIX sh, also commonly used for bash scripts
+    "*.bash",     # bash-specific
+    "*.csh",      # csh
+    "*.tcsh",     # tcsh (csh successor)
+    "*.ash",      # ash
+    "*.zsh",      # zsh
+    "*.ksh",      # ksh
+    "*.dash",     # dash (rare as an extension, but exists)
+    "*.fish",     # fish
+]
+
+
+@cached(cache={})
+def is_shell_script(path: str | Path) -> bool:
+    """
+    Detect a shell script by extension OR shebang — since most real-world
+    shell scripts have no file extension at all.
+    """
+    path = Path(path)
+    if any(fnmatch(str(path), p) for p in SHELL_SCRIPT_PATTERNS):
+        return True
+
+    try:
+        with path.open("r", encoding="utf-8", errors="replace") as f:
+            first_line = f.readline()
+    except (OSError, PermissionError):
+        return False
+
+    return bool(SHELL_SHEBANG_RE.match(first_line))
+
+
+def find_shell_scripts(root: Path):
+    """Yield all shell script file paths under root, recursively, skipping known noise dirs."""
+    for path in root.rglob("*"):
+        if not path.is_file():
+            continue
+        if is_binary(path):
+            continue
+        if any(part in SKIP_DIR_NAMES for part in path.parts):
+            continue
+        if any(part in SKIP_FILE_NAMES for part in path.parts):
+            continue
+        if path.suffix.lower() in SKIP_FILE_EXTENSIONS:
+            continue
+        if path.suffix.lower() in BINARY_FILE_EXTENSIONS:
+            continue
+        if not is_shell_script(path):
+            continue
+        yield path
+
+# ------------------------------------------------
