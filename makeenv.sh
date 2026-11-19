@@ -54,6 +54,27 @@ fi
 DEFAULT_ANCHOR_FILE=$(prompt_var "Default anchor file" "${DEFAULT_ANCHOR_FILE:-coding-best-practices-issues.md}")
 CONFIG_FILE=$(prompt_var "Rules configuration file" "${CONFIG_FILE:-examples/sample-config.yaml}")
 
+# Rules Selection Prompt (default: No, i.e. execute all the enabled rules)
+echo ""
+read -r -p "Do you want to execute rules selected by ID? (y/N): " SELECT_RULES_RESPONSE
+SELECT_RULES_RESPONSE=$(echo "${SELECT_RULES_RESPONSE}" | tr '[:upper:]' '[:lower:]')
+
+SELECTED_RULES=""
+if [[ "${SELECT_RULES_RESPONSE}" == "y" || "${SELECT_RULES_RESPONSE}" == "yes" ]]; then
+    while [ -z "${SELECTED_RULES}" ]; do
+        if [ -n "${RULES:-}" ]; then
+            SELECTED_RULES=$(prompt_var "Comma-separated list of rule IDs (e.g. LNG002,DOC001)" "${RULES}")
+        else
+            read -r -p "Comma-separated list of rule IDs (e.g. LNG002,DOC001): " SELECTED_RULES
+        fi
+        # Normalise: drop the whitespace and upper-case the IDs
+        SELECTED_RULES=$(echo "${SELECTED_RULES}" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+        if [ -z "${SELECTED_RULES}" ]; then
+            echo "❌ Please enter at least one rule ID."
+        fi
+    done
+fi
+
 # Verbose Configuration Prompt
 CURRENT_VERBOSE_ENABLED="${VERBOSE:-false}"
 DEFAULT_VERBOSE_PROMPT="y/N"
@@ -121,6 +142,10 @@ CONFIG_FILE=${CONFIG_FILE}
 VERBOSE=${IS_VERBOSE_ENABLED}
 AI_MODEL_ENABLED=${AI_MODEL_ENABLED}
 EOF
+
+if [ -n "${SELECTED_RULES}" ]; then
+    echo "RULES=${SELECTED_RULES}" >> "${ENV_FILE}"
+fi
 
 if [ "${AI_MODEL_ENABLED}" = "true" ]; then
     cat <<EOF >> "${ENV_FILE}"
