@@ -26,6 +26,13 @@ def run_cli(project, report, *extra):
 
 
 class TestMain:
+    # TODO The text report is not structured => Check it contains text fragments
+    # def test_the_text_report_is_written(self, project, tmp_path):
+    #     code, report = run_cli(project, tmp_path / "report.txt")
+    #     assert code == 0
+    #     assert [issue["ruleId"] for issue in report["issues"]] == ["DOC001"]
+    #     assert report["rules"][0]["engineId"] == "Coding BP for OSS Validator"
+
     def test_the_generic_report_is_written(self, project, tmp_path):
         code, report = run_cli(project, tmp_path / "report.json")
         assert code == 0
@@ -69,6 +76,15 @@ class TestMain:
             project, tmp_path / "report.json", "--config-file", str(tmp_path / "nope.yaml")
         )
         assert code == 0 and report["issues"]
+
+    def test_a_single_rule_can_be_executed(self, project, tmp_path):
+        code, report = run_cli(project, tmp_path / "report.json", "--rules", "DOC001")
+        assert code == 0
+        assert [rule["id"] for rule in report["rules"]] == ["DOC001"]
+
+    def test_an_unknown_rule_id_exits_with_one(self, project, tmp_path):
+        code, report = run_cli(project, tmp_path / "report.json", "--rules", "DOC001,NOPE001")
+        assert code == 1 and report is None
 
     def test_fail_on_issues_exits_with_two(self, project, tmp_path):
         code, _ = run_cli(project, tmp_path / "report.json", "--fail-on-issues")

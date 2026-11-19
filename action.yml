@@ -21,6 +21,10 @@ inputs:
     description: 'YAML file enabling/disabling rules and overriding severities'
     required: false
     default: ''
+  rules:
+    description: 'Comma-separated list of the IDs of the rules to execute (e.g. LNG002,DOC001), all the enabled rules when empty'
+    required: false
+    default: ''
   verbose:
     description: 'Enable debug logging'
     required: false
@@ -50,6 +54,7 @@ runs:
     OUTPUT_FILE: ${{ inputs.output-file }}
     OUTPUT_FORMAT: ${{ inputs.output-format }}
     CONFIG_FILE: ${{ inputs.config-file }}
+    RULES: ${{ inputs.rules }}
     VERBOSE: ${{ inputs.verbose }}
     AI_MODEL_PROVIDER: ${{ inputs.ai-model-provider }}
     AI_MODEL_BASE_URL: ${{ inputs.ai-model-base-url }}

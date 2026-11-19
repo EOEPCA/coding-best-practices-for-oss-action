@@ -13,7 +13,7 @@ Alternatively, the tool may also be executed locally using a container with pre-
 Use the `python3 -m coding_best_practices_for_oss --help` to obtain the detailed help:
 
 ```
-usage: coding-best-practices-for-oss [-h] [--path-to-check PATH_TO_CHECK] [--output-file OUTPUT_FILE] [--output-format {text,generic,sarif}] [--default-anchor-file DEFAULT_ANCHOR_FILE] [--config-file CONFIG_FILE] [--fail-on-issues]
+usage: coding-best-practices-for-oss [-h] [--path-to-check PATH_TO_CHECK] [--output-file OUTPUT_FILE] [--output-format {text,generic,sarif}] [--default-anchor-file DEFAULT_ANCHOR_FILE] [--config-file CONFIG_FILE] [--rules RULES] [--fail-on-issues]
                                      [--verbose] [--version]
 
 Check whether a project complies with coding best practices.
@@ -30,6 +30,7 @@ options:
                         file the issues that are not tied to a source file point at (default: coding-best-practices-issues.md)
   --config-file CONFIG_FILE
                         YAML file for enabling/disabling and configuring rules, categories and dependencies
+  --rules RULES         comma-separated list of the IDs of the rules to execute (e.g. LNG002,DOC001), default: all the enabled rules
   --fail-on-issues      exit with a non-zero status when issues are found
   --verbose             enable debug logging
   --version             show program's version number and exit
@@ -80,6 +81,7 @@ Environment variables:
 | OUTPUT_FORMAT       | Report format: 'text' (human readable), 'generic' (SonarQube compatible) or 'sarif'     | text          |
 | DEFAULT_ANCHOR_FILE | Default anchor file, used for issues not related to a specific file | coding-best-practices-issues.md   |
 | CONFIG_FILE         | Rules configuration file                                            | examples/sample-config.yaml       |
+| RULES               | Comma-separated IDs of the rules to execute (e.g. LNG002,DOC001)    | (all the enabled rules)           |
 | VERBOSE             | Enable debug logging: 'true', 'false'                               | false                             |
 | AI_MODEL_ENABLED    | Whether an independent AI model must be used                        | true                              |
 | AI_MODEL_PROVIDER   | AI model provider name (free string)                                | Ollama                            |

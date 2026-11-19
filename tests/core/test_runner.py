@@ -88,6 +88,32 @@ class TestRun:
         assert result.disabled == ["PRJ001"]
         assert result.rules == []
 
+    def test_only_the_selected_rule_runs(self, make_runner):
+        runner = make_runner({"a.py": "x = 1\n"}, [ProjectRule(), PythonFileRule()], rule_ids="py001")
+        result = runner.run()
+        assert [rule.id for rule in result.rules] == ["PY001"]
+        assert {issue.rule_id for issue in result.issues} == {"PY001"}
+
+    def test_an_unknown_selected_rule_is_reported(self, make_runner):
+        runner = make_runner(rules=[ProjectRule()], rule_ids="PRJ001, NOPE001")
+        with pytest.raises(LookupError, match=r"Unknown rule id\(s\) NOPE001 .*PRJ001"):
+            runner.run()
+
+    @pytest.mark.parametrize("rule_ids", ["PRJ001,PY001", " prj001 , py001 ,", ["PRJ001", "PY001"]])
+    def test_several_rules_can_be_selected(self, make_runner, rule_ids):
+        rules = [ProjectRule(), PythonFileRule(), CrashingRule()]
+        result = make_runner({"a.py": "x = 1\n"}, rules, rule_ids=rule_ids).run()
+        assert sorted(rule.id for rule in result.rules) == ["PRJ001", "PY001"]
+
+    def test_the_selected_rule_still_honours_the_configuration(self, make_runner):
+        runner = make_runner(
+            rules=[ProjectRule()],
+            config={"rules": {"PRJ001": {"enabled": False}}},
+            rule_ids="PRJ001",
+        )
+        result = runner.run()
+        assert result.rules == [] and result.disabled == ["PRJ001"]
+
     def test_the_engine_id_reaches_the_issues(self, make_runner):
         result = make_runner(rules=[ProjectRule()]).run()
         assert result.issues[0].engine_id == "Test Engine"

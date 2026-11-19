@@ -93,6 +93,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="YAML file for enabling/disabling and configuring rules, categories and dependencies",
     )
     parser.add_argument(
+        "--rules",
+        default=config.RULES,
+        help="comma-separated list of the IDs of the rules to execute (e.g. LNG002,DOC001), "
+        "default: all the enabled rules",
+    )
+    parser.add_argument(
         "--fail-on-issues",
         action="store_true",
         help="exit with a non-zero status when issues are found",
@@ -121,11 +127,12 @@ def main(argv: list[str] | None = None) -> int:
         anchor_file=args.default_anchor_file,
         engine_id=config.ENGINE_ID,
         config=config.load_config(args.config_file),
+        rule_ids=args.rules or None,
     )
 
     try:
         result = runner.run()
-    except NotADirectoryError as error:
+    except (NotADirectoryError, LookupError) as error:
         logger.error("%s", error)
         return 1
 

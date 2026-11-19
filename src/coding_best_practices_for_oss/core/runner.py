@@ -65,6 +65,7 @@ class Runner:
         rules: Sequence[Rule] | None = None,
         excluded_dirs: tuple[str, ...] = DEFAULT_EXCLUDED_DIRS,
         create_anchor_file: bool = True,
+        rule_ids: str | Iterable[str] | None = None,
     ) -> None:
         self.context = RuleContext(
             target_path=target_path,
@@ -77,6 +78,8 @@ class Runner:
         # honoured as-is, which is what the tests use.
         self.rules = list(rules) if rules is not None else instantiate_rules()
         self.create_anchor_file = create_anchor_file
+        # When set, only the rules with these ids are executed (case-insensitive).
+        self.rule_ids = _parse_rule_ids(rule_ids)
 
     @property
     def target_path(self) -> Path:
@@ -91,7 +94,7 @@ class Runner:
         result = RunResult()
         result.display_path = self.context.display_path
 
-        enabled = self._enabled_rules(result)
+        enabled = self._enabled_rules(self._selected_rules(), result)
         result.rules = enabled
         project_rules = [rule for rule in enabled if not rule.is_file_scoped]
         file_rules = [rule for rule in enabled if rule.is_file_scoped]
@@ -125,10 +128,24 @@ class Runner:
         logger.info("Done: %s", result.summary())
         return result
 
-    def _enabled_rules(self, result: RunResult) -> list[Rule]:
+    def _selected_rules(self) -> list[Rule]:
+        """Rules selected with `rule_ids`, or all the rules when it is not set."""
+        if not self.rule_ids:
+            return self.rules
+        known = {rule.id.upper() for rule in self.rules}
+        unknown = [rule_id for rule_id in self.rule_ids if rule_id not in known]
+        if unknown:
+            available = ", ".join(sorted(known)) or "none"
+            raise LookupError(
+                f"Unknown rule id(s) {', '.join(unknown)} (available: {available})."
+            )
+        logger.info("Only executing the rule(s) %s", ", ".join(self.rule_ids))
+        return [rule for rule in self.rules if rule.id.upper() in self.rule_ids]
+
+    def _enabled_rules(self, rules: Sequence[Rule], result: RunResult) -> list[Rule]:
         """Rules kept after applying the `rules:`/`categories:` configuration."""
         enabled = []
-        for rule in self.rules:
+        for rule in rules:
             if self.context.is_enabled(rule):
                 enabled.append(rule)
             else:
@@ -193,6 +210,16 @@ class Runner:
 def run(target_path: str | Path, **kwargs: Any) -> RunResult:
     """Convenience wrapper around `Runner(...).run()`."""
     return Runner(target_path, **kwargs).run()
+
+
+def _parse_rule_ids(rule_ids: str | Iterable[str] | None) -> list[str]:
+    """Upper-cased rule ids from a comma-separated string or an iterable."""
+    if not rule_ids:
+        return []
+    if isinstance(rule_ids, str):
+        rule_ids = rule_ids.split(",")
+    parsed = (str(rule_id).strip().upper() for rule_id in rule_ids)
+    return list(dict.fromkeys(rule_id for rule_id in parsed if rule_id))
 
 
 def _deduplicate(issues: Iterable[Issue]) -> list[Issue]:

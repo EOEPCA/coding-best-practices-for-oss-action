@@ -32,6 +32,7 @@ OUTPUT_FILE = env("output-file", "coding-best-practices-report.json")
 OUTPUT_FORMAT = env("output-format", "generic")
 DEFAULT_ANCHOR_FILE = env("default-anchor-file", "coding-best-practices-issues.md")
 CONFIG_FILE = env("config-file", "")
+RULES = env("rules", "")
 VERBOSE = env("verbose", "false")
 
 AI_MODEL_ENABLED = env("ai-model-enabled", "true")
