@@ -15,7 +15,9 @@ ENGINE_ID = "Coding BP for OSS Validator"
 
 
 def env(input_name: str, default: str = "") -> str:
-    """Value of a GitHub Action input, dash or underscore spelling."""
+    """Value of environment variable (e.g. via a GitHub Action input),
+    dash or underscore spelling, with or without `INPUT` prefix.
+    """
     upper = input_name.upper()
     return os.getenv(
         f"INPUT_{upper.replace('_', '-')}",
@@ -91,13 +93,24 @@ DEFAULT_GENERATE_OPTIONS = {
 }
 
 def load_config(config_file: str | Path | None = None) -> Mapping[str, Any]:
-    """Load the rule configuration file, or an empty configuration.
+    """Load the rule configuration file, then apply the run parameters to it.
 
     An empty configuration means "every rule enabled with its default
-    severity", which is what the action does when no config file is given.
+    severity and settings", which is what the action does when no config
+    file is given.
     See examples/sample-config.yaml for the expected structure.
+
+    The availability of the dependencies (AI model settings, ruff library) is
+    applied whether a configuration file is given or not: the AI model is
+    configured with run parameters, not with the configuration file.
     """
-    config_file = str(config_file or CONFIG_FILE)
+    config = _read_config_file(str(config_file or CONFIG_FILE))
+    _apply_dependency_availability(config)
+    return config
+
+
+def _read_config_file(config_file: str) -> dict[str, Any]:
+    """Content of the configuration file, or an empty configuration."""
     if not config_file:
         return {}
 
@@ -123,28 +136,37 @@ def load_config(config_file: str | Path | None = None) -> Mapping[str, Any]:
     if not isinstance(config, Mapping):
         logger.error("Configuration file %s must contain a mapping, ignoring it.", path)
         return {}
-    
+
     logger.info("Loaded configuration file: %s", path)
+    return dict(config)
+
+
+def _apply_dependency_availability(config: dict[str, Any]) -> None:
+    """Disable the dependencies that are turned off or not available.
+
+    The `dependencies:` section is optional (and may be empty) in the file.
+    """
+    dependencies = config.get("dependencies")
+    dependencies = dict(dependencies) if isinstance(dependencies, Mapping) else {}
+    config["dependencies"] = dependencies
+
+    def explicitly_disabled(name: str) -> bool:
+        settings = dependencies.get(name)
+        return isinstance(settings, Mapping) and not settings.get("enabled", True)
 
     if AI_MODEL_ENABLED == "false":
         logger.info("AI integration disabled")
-        config["dependencies"]["ai"] = {"enabled": False}
-    else:
+        dependencies["ai"] = {"enabled": False}
+    elif "" in [AI_MODEL_NAME, AI_MODEL_BASE_URL, AI_MODEL_API_KEY]:
         # Disable rules depending on AI if AI settings are missing
-        if "" in [AI_MODEL_NAME, AI_MODEL_BASE_URL, AI_MODEL_API_KEY]:
-            if config.get("dependencies", {}).get("ai", {}).get("enabled", True):
-                # AI dependency not explicitly disabled in configuration
-                logger.warning(
-                    "Disabling AI dependent rules due to missing connection properties."
-                )
-            config["dependencies"]["ai"] = {"enabled": False}
-    
+        if not explicitly_disabled("ai"):
+            logger.warning(
+                "Disabling AI dependent rules due to missing connection properties."
+            )
+        dependencies["ai"] = {"enabled": False}
+
     # Disable using "ruff" if the "ruff" module cannot be imported
     if importlib.util.find_spec("ruff") is None:
-        if config.get("dependencies", {}).get("ruff", {}).get("enabled", True):
-            # Ruff dependency not explicitly disabled in configuration
-            logger.warning(
-                "Disabling 'ruff' dependent rules due to missing library."
-            )
-        config["dependencies"]["ruff"] = {"enabled": False}
-    return config
+        if not explicitly_disabled("ruff"):
+            logger.warning("Disabling 'ruff' dependent rules due to missing library.")
+        dependencies["ruff"] = {"enabled": False}
