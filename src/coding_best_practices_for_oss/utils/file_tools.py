@@ -37,9 +37,9 @@ def find_text_files(root: Path):
     for path in root.rglob("*"):
         if not path.is_file():
             continue
-        if any(part in SKIP_DIR_NAMES for part in path.parts):
+        if any(part in SKIP_DIR_NAMES for part in path.relative_to(root).parts):
             continue
-        if any(part in SKIP_FILE_NAMES for part in path.parts):
+        if any(part in SKIP_FILE_NAMES for part in path.relative_to(root).parts):
             continue
         if path.suffix.lower() in SKIP_FILE_EXTENSIONS:
             continue
@@ -55,9 +55,9 @@ def find_python_files(root: Path):
     for path in root.rglob("*"):
         if not path.is_file():
             continue
-        if any(part in SKIP_DIR_NAMES for part in path.parts):
+        if any(part in SKIP_DIR_NAMES for part in path.relative_to(root).parts):
             continue
-        if any(part in SKIP_FILE_NAMES for part in path.parts):
+        if any(part in SKIP_FILE_NAMES for part in path.relative_to(root).parts):
             continue
         if path.suffix.lower() in SKIP_FILE_EXTENSIONS:
             continue
@@ -131,9 +131,9 @@ def find_shell_scripts(root: Path):
             continue
         if is_binary(path):
             continue
-        if any(part in SKIP_DIR_NAMES for part in path.parts):
+        if any(part in SKIP_DIR_NAMES for part in path.relative_to(root).parts):
             continue
-        if any(part in SKIP_FILE_NAMES for part in path.parts):
+        if any(part in SKIP_FILE_NAMES for part in path.relative_to(root).parts):
             continue
         if path.suffix.lower() in SKIP_FILE_EXTENSIONS:
             continue
