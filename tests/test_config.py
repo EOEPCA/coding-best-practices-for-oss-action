@@ -59,3 +59,8 @@ class TestLoadConfig:
         monkeypatch.setattr(config, "CONFIG_FILE", "")
         monkeypatch.setattr(importlib.util, "find_spec", lambda name: None)
         assert config.load_config()["dependencies"]["ruff"] == {"enabled": False}
+
+    def test_git_is_disabled_when_not_installed(self, monkeypatch, ai_configured):
+        monkeypatch.setattr(config, "CONFIG_FILE", "")
+        monkeypatch.setattr(config.shutil, "which", lambda name: None)
+        assert config.load_config()["dependencies"]["git"] == {"enabled": False}

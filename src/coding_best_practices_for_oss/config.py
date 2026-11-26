@@ -6,6 +6,7 @@
 import importlib.util
 import logging
 import os
+import shutil
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -172,3 +173,9 @@ def _apply_dependency_availability(config: dict[str, Any]) -> None:
         if not explicitly_disabled("ruff"):
             logger.warning("Disabling 'ruff' dependent rules due to missing library.")
         dependencies["ruff"] = {"enabled": False}
+
+    # Disable using "git" if the "git" command is not installed
+    if shutil.which("git") is None:
+        if not explicitly_disabled("git"):
+            logger.warning("Disabling 'git' dependent rules due to missing command.")
+        dependencies["git"] = {"enabled": False}

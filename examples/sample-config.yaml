@@ -44,12 +44,26 @@ rules:
     enabled: true
     # Should the print/pprint calls be ignored in main entry points (TBW)
     ignore_print_in_main: true
+  MNT001:
+    # Stale TODO/FIXME comments
+    enabled: true
+    severity: MINOR
+    # Limit above which a warning is generated (default: 180)
+    warning_threshold: 180  # days
+    # Limit above which an error is generated (default: 365)
+    error_threshold: 365  # days
+    # Limit above which a critical issue is generated (default: null = ignored)
+    critical_threshold: null  # days
 categories:
   # Allows disabling all the rules belonging to the same category at once
+  documentation:
+    enabled: true
   security:
     enabled: true
   style:
     enabled: false
+  maintainability:
+    enabled: true
 dependencies:
   # Allows disabling all the rules having specific dependencies at once
   ai:
@@ -57,4 +71,6 @@ dependencies:
   ruff:
     enabled: true
   flake8:
+    enabled: true
+  git:
     enabled: true
