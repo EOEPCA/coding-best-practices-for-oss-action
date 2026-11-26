@@ -1,10 +1,21 @@
 # examples/sample-config.yaml
-# Severities: MINOR, MEDIUM, MAJOR, CRITICAL
+# Severities: INFO, MINOR, MAJOR, CRITICAL and BLOCKER
 rules:
   # Enable/disable and configure rules individually
   DOC001:
+    # Presence of a README file
     enabled: true
     severity: MINOR
+  DOC002:
+    # Documentation content
+    enabled: true
+    severity: MINOR
+    # Documentation files sent to the model per query (default: 8)
+    max_files: 8
+    # Documentation files analyzed in total (READMEs and docs/ first) (default: 40)
+    max_total_files: 40
+    # Characters sent per documentation file (default: 8000)
+    max_chars: 8000
   SEC001:
     enabled: false
     severity: CRITICAL

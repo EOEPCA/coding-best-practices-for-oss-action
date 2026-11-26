@@ -9,14 +9,6 @@ RULE_ID = "DOC001"
 logger = getLogger(__name__, RULE_ID)
 
 DESCRIPTION = """<p>A <code>README</code> file (md, rst, txt) should be included for project documentation and overview.</p>
-<p>Software documentation should contain, even briefly, the following information:</p>
-<ul>
-<li><b>Dependencies and needs</b>, possibly also programmatically (e.g. <code>requirements.txt</code> file, <code>Dockerfile</code>, etc.)</li>
-<li><b>Installation/deployment instructions</b>, e.g. command to compile, build, create virtual environment ...</li>
-<li><b>How to run the software</b>, including examples</li>
-<li><b>Input data</b>, what is needed and how to access or create it</li>
-<li><b>Expected output</b>, and how to open/read/understand it</li>
-</ul>
 """
 
 
