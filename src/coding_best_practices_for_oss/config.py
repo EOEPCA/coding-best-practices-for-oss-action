@@ -164,6 +164,8 @@ def _apply_dependency_availability(config: dict[str, Any]) -> None:
                 "Disabling AI dependent rules due to missing connection properties."
             )
         dependencies["ai"] = {"enabled": False}
+    elif not explicitly_disabled("ai"):
+        logger.info("Found configuration for AI model provider: %s", AI_MODEL_PROVIDER)
 
     # Disable using "ruff" if the "ruff" module cannot be imported
     if importlib.util.find_spec("ruff") is None:
