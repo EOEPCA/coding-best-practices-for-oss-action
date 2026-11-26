@@ -2,7 +2,7 @@ import json
 from typing import Any
 
 from cachetools import cached
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
 from coding_best_practices_for_oss.config import (
     AI_MODEL_NAME,
@@ -81,37 +81,34 @@ def query_model(prompt: str, **kwargs: Any) -> dict:
         raise ex
 
 @cached(cache={})
-def get_models():
+def get_models() -> list[str]:
+    """IDs of the models offered by the AI model provider ("GET /models"), sorted.
+
+    Returns an empty list if the provider cannot be reached or rejects the request.
     """
-    """
+    if not AI_MODEL_BASE_URL or not AI_MODEL_API_KEY:
+        logger.error("The AI model base URL and API key must be set to list the models")
+        return []
+    logger.debug("Listing the models of %s (%s) ...", AI_MODEL_PROVIDER, AI_MODEL_BASE_URL)
+    client = OpenAI(api_key=AI_MODEL_API_KEY, base_url=AI_MODEL_BASE_URL)
     try:
-        response = requests.get(
-            OPENAI_URL + "/models",
-            headers = {
-                "Authorization": "Bearer " + OPENAI_KEY,
-                "Content-Type": "application/json",
-            }
-        )
-        response.raise_for_status()
-        models_data = response.json().get("data", [])
-        model_names = [model["id"] for model in models_data]
-        return model_names
-    except requests.exceptions.RequestException as err:
-        logger.error("Could not connect to the model engine API: %s", err)
+        return sorted(model.id for model in client.models.list())
+    except OpenAIError as err:
+        logger.error("Could not get the models from %s (%s): %s", AI_MODEL_NAME, AI_MODEL_BASE_URL, err)
         return []
 
 def get_token_count(system_prompt: str, user_payload: str, json_schema: dict) -> int:
     """
     """
     # payload = {
-    #     "model": OLLAMA_MODEL,
+    #     "model": AI_MODEL_NAME,
     #     "prompt": system_prompt,
     # }
     # response = requests.post(OLLAMA_API_URL + "/tokenize", json=payload)
     # token_count = len(response.json().get("tokens", []))
     # ---
     payload = {
-        "model": OLLAMA_MODEL,
+        "model": AI_MODEL_NAME,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_payload},
@@ -127,7 +124,7 @@ def get_token_count(system_prompt: str, user_payload: str, json_schema: dict) ->
             "num_predict": 1,  # Stop after reading the prompt
         },
     }
-    response = requests.post(OLLAMA_API_URL + "/chat", json=payload)
+    response = requests.post(AI_MODEL_BASE_URL + "/chat", json=payload)
     token_count = response.json().get("prompt_eval_count", 0)
     logger.info("System prompt tokens: %s", token_count)
     return token_count

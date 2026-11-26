@@ -104,6 +104,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="exit with a non-zero status when issues are found",
     )
     parser.add_argument(
+        "--get-ai-models",
+        action="store_true",
+        help="print the models offered by the AI model provider and exit",
+    )
+    parser.add_argument(
+        "--check-ai-model",
+        metavar="NAME",
+        help="check whether the AI model provider offers the model NAME and exit "
+        "(exit code 0 if it does, 1 otherwise)",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         default=(config.VERBOSE == "true"),
@@ -117,6 +128,24 @@ def main(argv: list[str] | None = None) -> int:
     """Run the validator, return the process exit code."""
     args = build_parser().parse_args(argv)
     configure_logging(args.verbose)
+
+    if args.get_ai_models:
+        # Imported here: the openai library is only needed when the AI model is used
+        from coding_best_practices_for_oss.utils.ai_tools import get_models
+
+        models = get_models()
+        for model in models:
+            print(model)
+        return 0 if models else 1
+
+    if args.check_ai_model:
+        from coding_best_practices_for_oss.utils.ai_tools import get_models
+
+        if args.check_ai_model in get_models():
+            print(f"Model '{args.check_ai_model}' is available")
+            return 0
+        print(f"Model '{args.check_ai_model}' is not available")
+        return 1
 
     if args.output_format == "text" and args.output_file.endswith(".json"):
         args.output_file = args.output_file[:-5] + ".txt"
